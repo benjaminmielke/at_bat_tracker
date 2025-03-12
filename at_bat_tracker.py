@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling, button outlines, and to force columns to not wrap
+# Inject custom CSS for global styling and full-width buttons
 st.markdown(
     """
     <style>
@@ -16,7 +16,7 @@ st.markdown(
         background-color: black;
         color: white;
     }
-    /* Blue-outlined buttons with orange background */
+    /* Full-width blue-outlined buttons with orange background */
     .stButton>button {
         background-color: orange;
         color: black;
@@ -24,6 +24,7 @@ st.markdown(
         padding: 10px 20px;
         border-radius: 5px;
         width: 100%;
+        margin-bottom: 10px;
     }
     /* Title styling: no extra margin-bottom */
     .page-title {
@@ -51,14 +52,6 @@ st.markdown(
         padding: 8px;
         border-radius: 5px;
     }
-    /* Force Streamlit's horizontal block (st.columns) to never wrap */
-    [data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap;
-    }
-    [data-testid="stHorizontalBlock"] > div {
-        flex: 1 1 0;
-        padding: 5px;
-    }
     </style>
     """,
     unsafe_allow_html=True
@@ -74,7 +67,6 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 # BIGQUERY FUNCTIONS
 # =============================================================================
 def get_bigquery_client():
-    # Access the service account info from Streamlit secrets
     service_account_info = st.secrets["bigquery"]
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     return bigquery.Client(credentials=credentials, project=credentials.project_id)
@@ -147,25 +139,22 @@ if st.session_state.stage == "game_details":
 
 elif st.session_state.stage == "select_outcome":
     st.header("Select Outcome")
-    cols = st.columns(4)
-    cols[0].button("SO", on_click=select_outcome, args=("Strikeout",))
-    cols[1].button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",))
-    cols[2].button("Walk", on_click=select_outcome, args=("Walk",))
-    cols[3].button("Batted Ball", on_click=select_outcome, args=("Batted Ball",))
+    st.button("SO", on_click=select_outcome, args=("Strikeout",), key="so")
+    st.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",), key="so_looking")
+    st.button("Walk", on_click=select_outcome, args=("Walk",), key="walk")
+    st.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",), key="batted_ball")
 
 elif st.session_state.stage == "select_batted_result":
     st.header("Select Batted Ball Result")
-    cols = st.columns(3)
-    cols[0].button("Error", on_click=select_batted_result, args=("Error",))
-    cols[1].button("Base Hit", on_click=select_batted_result, args=("Base Hit",))
-    cols[2].button("Out", on_click=select_batted_result, args=("Out",))
+    st.button("Error", on_click=select_batted_result, args=("Error",), key="error")
+    st.button("Base Hit", on_click=select_batted_result, args=("Base Hit",), key="base_hit")
+    st.button("Out", on_click=select_batted_result, args=("Out",), key="out")
 
 elif st.session_state.stage == "select_contact_type":
     st.header("Select Contact Type")
-    cols = st.columns(3)
-    cols[0].button("Grounder", on_click=select_contact_type, args=("Grounder",))
-    cols[1].button("Fly Ball", on_click=select_contact_type, args=("Fly Ball",))
-    cols[2].button("Line Drive", on_click=select_contact_type, args=("Line Drive",))
+    st.button("Grounder", on_click=select_contact_type, args=("Grounder",), key="grounder")
+    st.button("Fly Ball", on_click=select_contact_type, args=("Fly Ball",), key="fly_ball")
+    st.button("Line Drive", on_click=select_contact_type, args=("Line Drive",), key="line_drive")
 
 elif st.session_state.stage == "log_hit_location":
     st.header("Click on the field to log location")
