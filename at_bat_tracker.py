@@ -319,8 +319,8 @@ elif st.session_state["stage"] == "plot_hit_location":
         value_line = r"$\mathbf{" + str(hard_hit) + "}$" + "%" + r"$\mathbf{" + str(weak_hit) + "}$" + "%" + f"{fly}%" + f"{line}%" + f"{ground}%"
         # Instead of relying on Python string centering (which may not render as expected in mathtext),
         # we use ax.text with fixed positions. Adjust the formatting manually:
-        ax.text(0.5, 0.88, r"$\mathbf{Hard\ Hit}\quad\mathbf{Weak\ Hit}\quad Fly\ Ball\quad Line\ Drive\quad Ground\ Ball$", transform=ax.transAxes, ha='center', fontsize=7, color='black')
-        ax.text(0.5, 0.84, rf"$\mathbf{{{hard_hit}}}\% \quad \mathbf{{{weak_hit}}}\% \quad {fly}\% \quad {line}\% \quad {ground}\%$", transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        ax.text(0.5, 0.99, r"$\mathbf{Hard\ Hit}\quad\mathbf{Weak\ Hit}\quad Fly\ Ball\quad Line\ Drive\quad Ground\ Ball$", transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        ax.text(0.5, 0.95, rf"$\mathbf{{{hard_hit}}}\% \quad \mathbf{{{weak_hit}}}\% \quad {fly}\% \quad {line}\% \quad {ground}\%$", transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
