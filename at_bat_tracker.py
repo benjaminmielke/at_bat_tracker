@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for a black background and white text
+# Inject custom CSS for a black background, white text, and adjust other elements as needed
 st.markdown(
     """
     <style>
@@ -24,6 +24,9 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# Updated Title: "Log At Bat", centered and orange
+st.markdown("<h1 style='text-align: center; color: orange;'>Log At Bat</h1>", unsafe_allow_html=True)
 
 # =============================================================================
 # BIGQUERY FUNCTIONS
@@ -94,7 +97,6 @@ def log_another_at_bat():
 
 # --- UI Starts here ---
 st.image("fuel_logo.jpeg", use_container_width=True)
-st.title("Baseball Hit Tracker")
 
 if st.session_state.stage == "game_details":
     st.header("Enter Game Details")
