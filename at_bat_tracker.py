@@ -294,7 +294,6 @@ elif st.session_state["stage"] == "log_hit_location":
         st.experimental_rerun()
 
 elif st.session_state["stage"] == "plot_hit_location":
-    #st.header(f"Hit Location for {st.session_state['hitter_name']}")
     # Load all hits for the current hitter from BigQuery.
     hits = load_hits_for_player(st.session_state["hitter_name"])
     # Load all metrics from the view.
@@ -309,10 +308,8 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
     # Add metrics text below the title in two lines.
     if None not in (hard_hit, weak_hit, fly, line, ground):
-        # Format the first line with labels and the second with values (with the % sign directly after the numbers).
         label_line = f"{'Hard Hit':^15}{'Weak Hit':^15}{'Fly Ball':^15}{'Line Drive':^15}{'Ground Ball':^15}"
         value_line = f"{hard_hit:}%             {weak_hit:}%             {fly:}%             {line:}%              {ground:}%"
-        # Adjust the y coordinates (0.86 and 0.82) to move the text closer to the title.
         ax.text(0.5, 0.99, label_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
         ax.text(0.5, 0.95, value_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
@@ -339,6 +336,34 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.legend(handles=legend_elements, loc="lower left", prop={'size': 8}, frameon=False)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
+    
+    # =============================================================================
+    # Calculate Standard Hitting Metrics and display as a table.
+    # =============================================================================
+    import pandas as pd
+    # Definitions:
+    # Plate Appearances (PA): total number of hits logged.
+    # At Bats (AB): PA excluding walks.
+    # Hits: Only "Batted Ball" outcomes with batted_result in ["Single", "Double", "Triple", "Homerun"]
+    # Total Bases: Single = 1, Double = 2, Triple = 3, Homerun = 4.
+    num_plate = len(hits)
+    num_walks = sum(1 for hit in hits if hit["outcome"] == "Walk")
+    num_strikeouts = sum(1 for hit in hits if hit["outcome"] in ["Strikeout Looking", "Strikeout Swinging"])
+    num_hits = sum(1 for hit in hits if hit["outcome"] == "Batted Ball" and hit["batted_result"] in ["Single", "Double", "Triple", "Homerun"])
+    total_bases = sum({"Single": 1, "Double": 2, "Triple": 3, "Homerun": 4}.get(hit["batted_result"], 0)
+                      for hit in hits if hit["outcome"] == "Batted Ball")
+    at_bats = num_plate - num_walks  # Assuming all non-walks count as AB.
+    
+    batting_avg = num_hits / at_bats if at_bats > 0 else 0
+    slugging = total_bases / at_bats if at_bats > 0 else 0
+    onbase = (num_hits + num_walks) / num_plate if num_plate > 0 else 0
+    
+    metrics_df = pd.DataFrame({
+        "Metric": ["Batting Average", "Slugging Percentage", "On Base Percentage", "Walks", "Strikeouts"],
+        "Value": [f"{batting_avg:.3f}", f"{slugging:.3f}", f"{onbase:.3f}", num_walks, num_strikeouts]
+    })
+    st.table(metrics_df)
+
 
 elif st.session_state["stage"] == "reset":
     st.header("At-Bat Recorded")
