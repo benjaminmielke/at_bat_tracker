@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling and the form container without the extra bar and with blue-outlined buttons
+# Inject custom CSS for global styling, button outlines, and horizontal button groups
 st.markdown(
     """
     <style>
@@ -16,14 +16,15 @@ st.markdown(
         background-color: black;
         color: white;
     }
+    /* Blue-outlined buttons with orange background */
     .stButton>button {
         background-color: orange;
         color: black;
-        border: 2px solid blue; /* blue outline */
+        border: 2px solid blue;
         padding: 10px 20px;
         border-radius: 5px;
     }
-    /* Title styling: removed extra margin-bottom */
+    /* Title styling: no extra margin-bottom */
     .page-title {
         text-align: center;
         color: orange;
@@ -42,13 +43,24 @@ st.markdown(
         color: orange;
         text-align: center;
     }
-    /* Style input fields */
     .game-details-container input {
         background-color: black;
         color: white;
         border: 1px solid #444;
         padding: 8px;
         border-radius: 5px;
+    }
+    /* Horizontal button container: force buttons to remain in one row */
+    .horizontal-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: space-around;
+        margin-bottom: 20px;
+    }
+    .horizontal-buttons > div {
+        flex: 0 0 auto;
+        padding: 5px;
     }
     </style>
     """,
@@ -83,10 +95,7 @@ def log_to_bigquery(hit_info):
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent", 
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        if key == "hit_data":
-            st.session_state[key] = []
-        else:
-            st.session_state[key] = None if key != "stage" else "game_details"
+        st.session_state[key] = [] if key=="hit_data" else (None if key != "stage" else "game_details")
 
 # --- Button callbacks ---
 def submit_game_details():
@@ -130,7 +139,6 @@ def log_another_at_bat():
 
 # --- UI Starts here ---
 if st.session_state.stage == "game_details":
-    # Wrap the Enter Game Details form in a styled container
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
         st.markdown("<h2>Enter Game Details</h2>", unsafe_allow_html=True)
@@ -142,34 +150,38 @@ if st.session_state.stage == "game_details":
 
 elif st.session_state.stage == "select_outcome":
     st.header("Select Outcome")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.button("SO", on_click=select_outcome, args=("Strikeout",))
-    col2.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",))
-    col3.button("Walk", on_click=select_outcome, args=("Walk",))
-    col4.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",))
+    st.markdown("<div class='horizontal-buttons'>", unsafe_allow_html=True)
+    cols = st.columns(4)
+    cols[0].button("SO", on_click=select_outcome, args=("Strikeout",))
+    cols[1].button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",))
+    cols[2].button("Walk", on_click=select_outcome, args=("Walk",))
+    cols[3].button("Batted Ball", on_click=select_outcome, args=("Batted Ball",))
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_batted_result":
     st.header("Select Batted Ball Result")
-    col1, col2, col3 = st.columns(3)
-    col1.button("Error", on_click=select_batted_result, args=("Error",))
-    col2.button("Base Hit", on_click=select_batted_result, args=("Base Hit",))
-    col3.button("Out", on_click=select_batted_result, args=("Out",))
+    st.markdown("<div class='horizontal-buttons'>", unsafe_allow_html=True)
+    cols = st.columns(3)
+    cols[0].button("Error", on_click=select_batted_result, args=("Error",))
+    cols[1].button("Base Hit", on_click=select_batted_result, args=("Base Hit",))
+    cols[2].button("Out", on_click=select_batted_result, args=("Out",))
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_contact_type":
     st.header("Select Contact Type")
-    col1, col2, col3 = st.columns(3)
-    col1.button("Grounder", on_click=select_contact_type, args=("Grounder",))
-    col2.button("Fly Ball", on_click=select_contact_type, args=("Fly Ball",))
-    col3.button("Line Drive", on_click=select_contact_type, args=("Line Drive",))
+    st.markdown("<div class='horizontal-buttons'>", unsafe_allow_html=True)
+    cols = st.columns(3)
+    cols[0].button("Grounder", on_click=select_contact_type, args=("Grounder",))
+    cols[1].button("Fly Ball", on_click=select_contact_type, args=("Fly Ball",))
+    cols[2].button("Line Drive", on_click=select_contact_type, args=("Line Drive",))
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "log_hit_location":
     st.header("Click on the field to log location")
     img = Image.open("baseball_field_image.png")
     click_data = streamlit_image_coordinates(img)
-
     if click_data and click_data.get("x") is not None:
         st.session_state.img_click_data = click_data
-
         hit_info = {
             "id": str(uuid.uuid4()),
             "date": str(st.session_state.date),
@@ -183,7 +195,6 @@ elif st.session_state.stage == "log_hit_location":
         }
         st.session_state.hit_data.append(hit_info)
         log_to_bigquery(hit_info)
-
         st.session_state.stage = "plot_hit_location"
         st.experimental_rerun()
 
@@ -194,13 +205,10 @@ elif st.session_state.stage == "plot_hit_location":
     ax.imshow(img)
     ax.axis('off')
     ax.set_xlim(0, img.width)
-    ax.set_ylim(img.height, 0)  # Match Streamlit image coordinate system
-
-    # Plot all hits
+    ax.set_ylim(img.height, 0)
     for hit in st.session_state.hit_data:
         if hit["x_coordinate"] and hit["y_coordinate"]:
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
-
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
@@ -213,5 +221,4 @@ elif st.session_state.stage == "reset":
     if st.session_state.outcome == "Batted Ball":
         st.write(f"Batted Result: {st.session_state.batted_result}")
         st.write(f"Contact Type: {st.session_state.contact_type}")
-
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
