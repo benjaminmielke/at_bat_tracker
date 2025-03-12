@@ -17,7 +17,7 @@ if "adding_opponent" not in st.session_state:
 if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
 
-# Inject custom CSS for global styling, full-width buttons, and special styling for plus buttons
+# Inject custom CSS for global styling, full-width buttons, and plus buttons
 st.markdown(
     """
     <style>
@@ -36,13 +36,16 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
-    /* Special styling for plus buttons (identified by their key) */
+    /* Plus buttons: green background, smaller size, and display a plus emoji */
     button[data-key="add_opponent"],
     button[data-key="add_hitter"] {
         background-color: green !important;
         color: black !important;
+        width: auto !important;
+        padding: 5px 10px !important;
+        font-size: 1.2em !important;
     }
-    /* Title styling: no extra margin-bottom */
+    /* Title styling */
     .page-title {
         text-align: center;
         color: orange;
@@ -57,12 +60,14 @@ st.markdown(
         margin: 20px auto;
         max-width: 500px;
     }
-    .game-details-container input {
+    .game-details-container input,
+    .game-details-container select {
         background-color: black;
         color: white;
         border: 1px solid #444;
         padding: 8px;
         border-radius: 5px;
+        width: 100%;
     }
     </style>
     """,
@@ -72,7 +77,7 @@ st.markdown(
 # Display the logo image at the top
 st.image("fuel_logo.jpeg", use_container_width=True)
 
-# Display the title below the logo without extra margin
+# Display the title below the logo
 st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 
 # =============================================================================
@@ -96,11 +101,11 @@ def log_to_bigquery(hit_info):
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key=="hit_data" else (None if key != "stage" else "game_details")
+        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
 
 # --- Button callbacks ---
 def submit_game_details():
-    # Save the selected opponent and hitter from the select boxes
+    # Retrieve the selected values from the select boxes.
     st.session_state.opponent = st.session_state.get("selected_opponent", "")
     st.session_state.hitter_name = st.session_state.get("selected_hitter", "")
     if st.session_state.opponent and st.session_state.hitter_name:
@@ -145,13 +150,11 @@ def log_another_at_bat():
 if st.session_state.stage == "game_details":
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
-        # Removed the "Enter Game Details" title as requested
         st.session_state.date = st.date_input("Select Date")
-        # Opponent field as a selectbox with an adjacent green plus button
-        col_opponent, col_opponent_add = st.columns([3, 1])
-        selected_opponent = col_opponent.selectbox("Opponent", st.session_state["opponent_options"],
-                                                   key="selected_opponent")
-        if col_opponent_add.button("+", key="add_opponent"):
+        # Opponent select box with a plus button horizontally aligned
+        col_opponent, col_opponent_plus = st.columns([4, 1])
+        col_opponent.selectbox("Opponent", st.session_state["opponent_options"], key="selected_opponent")
+        if col_opponent_plus.button("➕", key="add_opponent"):
             st.session_state["adding_opponent"] = True
         if st.session_state["adding_opponent"]:
             new_opponent = st.text_input("New Opponent", key="new_opponent")
@@ -159,13 +162,11 @@ if st.session_state.stage == "game_details":
                 if new_opponent and new_opponent not in st.session_state["opponent_options"]:
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
-                st.session_state.selected_opponent = new_opponent
                 st.experimental_rerun()
-        # Hitter field as a selectbox with an adjacent green plus button
-        col_hitter, col_hitter_add = st.columns([3, 1])
-        selected_hitter = col_hitter.selectbox("Hitter", st.session_state["hitter_options"],
-                                               key="selected_hitter")
-        if col_hitter_add.button("+", key="add_hitter"):
+        # Hitter select box with a plus button horizontally aligned
+        col_hitter, col_hitter_plus = st.columns([4, 1])
+        col_hitter.selectbox("Hitter", st.session_state["hitter_options"], key="selected_hitter")
+        if col_hitter_plus.button("➕", key="add_hitter"):
             st.session_state["adding_hitter"] = True
         if st.session_state["adding_hitter"]:
             new_hitter = st.text_input("New Hitter", key="new_hitter")
@@ -173,7 +174,6 @@ if st.session_state.stage == "game_details":
                 if new_hitter and new_hitter not in st.session_state["hitter_options"]:
                     st.session_state["hitter_options"].append(new_hitter)
                 st.session_state["adding_hitter"] = False
-                st.session_state.selected_hitter = new_hitter
                 st.experimental_rerun()
         st.button("Next", on_click=submit_game_details)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -231,7 +231,7 @@ elif st.session_state.stage == "plot_hit_location":
     ax.imshow(img)
     ax.axis('off')
     ax.set_xlim(0, img.width)
-    ax.set_ylim(img.height, 0)  # Match Streamlit image coordinate system
+    ax.set_ylim(img.height, 0)
     for hit in st.session_state.hit_data:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
