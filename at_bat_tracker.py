@@ -36,7 +36,7 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
-    /* Plus buttons: green background, smaller size, and display a plus emoji */
+    /* Plus buttons: green background, smaller size, showing a plus emoji */
     button[data-key="add_opponent"],
     button[data-key="add_hitter"] {
         background-color: green !important;
@@ -101,57 +101,57 @@ def log_to_bigquery(hit_info):
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
+        st.session_state[key] = [] if key == "hit_data" else (None if key != "stage" else "game_details")
 
 # --- Button callbacks ---
 def submit_game_details():
-    # Retrieve the selected values from the select boxes.
-    st.session_state.opponent = st.session_state.get("selected_opponent", "")
-    st.session_state.hitter_name = st.session_state.get("selected_hitter", "")
-    if st.session_state.opponent and st.session_state.hitter_name:
-        st.session_state.stage = "select_outcome"
+    # Retrieve the selections; no manual assignment to a protected key
+    st.session_state["opponent"] = st.session_state.get("selected_opponent", "")
+    st.session_state["hitter_name"] = st.session_state.get("selected_hitter", "")
+    if st.session_state["opponent"] and st.session_state["hitter_name"]:
+        st.session_state["stage"] = "select_outcome"
     else:
         st.error("Please fill in all details before proceeding.")
 
 def select_outcome(outcome):
-    st.session_state.outcome = outcome
+    st.session_state["outcome"] = outcome
     if outcome == "Batted Ball":
-        st.session_state.stage = "select_batted_result"
+        st.session_state["stage"] = "select_batted_result"
     else:
         hit_info = {
             "id": str(uuid.uuid4()),
-            "date": str(st.session_state.date),
-            "opponent": st.session_state.opponent,
-            "hitter_name": st.session_state.hitter_name,
+            "date": str(st.session_state["date"]),
+            "opponent": st.session_state["opponent"],
+            "hitter_name": st.session_state["hitter_name"],
             "outcome": outcome,
             "batted_result": None,
             "contact_type": None,
             "x_coordinate": None,
             "y_coordinate": None
         }
-        st.session_state.hit_data.append(hit_info)
+        st.session_state["hit_data"].append(hit_info)
         log_to_bigquery(hit_info)
-        st.session_state.stage = "reset"
+        st.session_state["stage"] = "reset"
 
 def select_batted_result(result):
-    st.session_state.batted_result = result
-    st.session_state.stage = "select_contact_type"
+    st.session_state["batted_result"] = result
+    st.session_state["stage"] = "select_contact_type"
 
 def select_contact_type(contact):
-    st.session_state.contact_type = contact
-    st.session_state.stage = "log_hit_location"
-    st.session_state.img_click_data = None
+    st.session_state["contact_type"] = contact
+    st.session_state["stage"] = "log_hit_location"
+    st.session_state["img_click_data"] = None
 
 def log_another_at_bat():
-    st.session_state.stage = "game_details"
-    st.session_state.img_click_data = None
+    st.session_state["stage"] = "game_details"
+    st.session_state["img_click_data"] = None
 
 # --- UI Starts here ---
-if st.session_state.stage == "game_details":
+if st.session_state["stage"] == "game_details":
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
-        st.session_state.date = st.date_input("Select Date")
-        # Opponent select box with a plus button horizontally aligned
+        st.session_state["date"] = st.date_input("Select Date")
+        # Opponent select box with green plus button in a row
         col_opponent, col_opponent_plus = st.columns([4, 1])
         col_opponent.selectbox("Opponent", st.session_state["opponent_options"], key="selected_opponent")
         if col_opponent_plus.button("➕", key="add_opponent"):
@@ -163,7 +163,7 @@ if st.session_state.stage == "game_details":
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
                 st.experimental_rerun()
-        # Hitter select box with a plus button horizontally aligned
+        # Hitter select box with green plus button in a row
         col_hitter, col_hitter_plus = st.columns([4, 1])
         col_hitter.selectbox("Hitter", st.session_state["hitter_options"], key="selected_hitter")
         if col_hitter_plus.button("➕", key="add_hitter"):
@@ -178,13 +178,13 @@ if st.session_state.stage == "game_details":
         st.button("Next", on_click=submit_game_details)
         st.markdown("</div>", unsafe_allow_html=True)
 
-elif st.session_state.stage == "select_outcome":
+elif st.session_state["stage"] == "select_outcome":
     st.header("Select At-bat Outcome")
     st.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",), key="so_looking")
     st.button("Walk", on_click=select_outcome, args=("Walk",), key="walk")
     st.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",), key="batted_ball")
 
-elif st.session_state.stage == "select_batted_result":
+elif st.session_state["stage"] == "select_batted_result":
     st.header("Select Hit Result")
     st.button("Error", on_click=select_batted_result, args=("Error",), key="error")
     st.button("Single", on_click=select_batted_result, args=("Single",), key="single")
@@ -193,7 +193,7 @@ elif st.session_state.stage == "select_batted_result":
     st.button("Homerun", on_click=select_batted_result, args=("Homerun",), key="homerun")
     st.button("Out", on_click=select_batted_result, args=("Out",), key="out")
 
-elif st.session_state.stage == "select_contact_type":
+elif st.session_state["stage"] == "select_contact_type":
     st.header("Select Contact Type")
     st.button("Weak Ground Ball", on_click=select_contact_type, args=("Weak Ground Ball",), key="weak_ground_ball")
     st.button("Hard Ground Ball", on_click=select_contact_type, args=("Hard Ground Ball",), key="hard_ground_ball")
@@ -202,49 +202,49 @@ elif st.session_state.stage == "select_contact_type":
     st.button("Weak Fly Ball", on_click=select_contact_type, args=("Weak Fly Ball",), key="weak_fly_ball")
     st.button("Hard Fly Ball", on_click=select_contact_type, args=("Hard Fly Ball",), key="hard_fly_ball")
 
-elif st.session_state.stage == "log_hit_location":
+elif st.session_state["stage"] == "log_hit_location":
     st.header("Double press on the field to log location")
     img = Image.open("baseball_field_image.png")
     click_data = streamlit_image_coordinates(img)
     if click_data and click_data.get("x") is not None:
-        st.session_state.img_click_data = click_data
+        st.session_state["img_click_data"] = click_data
         hit_info = {
             "id": str(uuid.uuid4()),
-            "date": str(st.session_state.date),
-            "opponent": st.session_state.opponent,
-            "hitter_name": st.session_state.hitter_name,
-            "outcome": st.session_state.outcome,
-            "batted_result": st.session_state.batted_result,
-            "contact_type": st.session_state.contact_type,
+            "date": str(st.session_state["date"]),
+            "opponent": st.session_state["opponent"],
+            "hitter_name": st.session_state["hitter_name"],
+            "outcome": st.session_state["outcome"],
+            "batted_result": st.session_state["batted_result"],
+            "contact_type": st.session_state["contact_type"],
             "x_coordinate": click_data["x"],
             "y_coordinate": click_data["y"]
         }
-        st.session_state.hit_data.append(hit_info)
+        st.session_state["hit_data"].append(hit_info)
         log_to_bigquery(hit_info)
-        st.session_state.stage = "plot_hit_location"
+        st.session_state["stage"] = "plot_hit_location"
         st.experimental_rerun()
 
-elif st.session_state.stage == "plot_hit_location":
-    st.header(f"Hit Location for {st.session_state.hitter_name}")
+elif st.session_state["stage"] == "plot_hit_location":
+    st.header(f"Hit Location for {st.session_state['hitter_name']}")
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
     ax.axis('off')
     ax.set_xlim(0, img.width)
-    ax.set_ylim(img.height, 0)
-    for hit in st.session_state.hit_data:
+    ax.set_ylim(img.height, 0)  # Match image coordinate system
+    for hit in st.session_state["hit_data"]:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
-elif st.session_state.stage == "reset":
+elif st.session_state["stage"] == "reset":
     st.header("At-Bat Recorded")
-    st.write(f"Hitter: {st.session_state.hitter_name}")
-    st.write(f"Date: {st.session_state.date}")
-    st.write(f"Opponent: {st.session_state.opponent}")
-    st.write(f"Outcome: {st.session_state.outcome}")
-    if st.session_state.outcome == "Batted Ball":
-        st.write(f"Batted Result: {st.session_state.batted_result}")
-        st.write(f"Contact Type: {st.session_state.contact_type}")
+    st.write(f"Hitter: {st.session_state['hitter_name']}")
+    st.write(f"Date: {st.session_state['date']}")
+    st.write(f"Opponent: {st.session_state['opponent']}")
+    st.write(f"Outcome: {st.session_state['outcome']}")
+    if st.session_state["outcome"] == "Batted Ball":
+        st.write(f"Batted Result: {st.session_state['batted_result']}")
+        st.write(f"Contact Type: {st.session_state['contact_type']}")
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
