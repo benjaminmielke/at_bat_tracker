@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from google.cloud import bigquery
 from google.oauth2 import service_account
-import json
 import uuid
 
 # Helper to rerun the app if possible.
@@ -32,7 +31,7 @@ st.markdown(
         color: white;
     }
     /* Main buttons: full-width blue-outlined with orange background */
-    .stButton>button {
+    .stButton > button {
         background-color: orange;
         color: black;
         border: 2px solid blue;
@@ -41,11 +40,11 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
-    /* Override plus and save buttons using Base Web attribute */
-    button[data-baseweb="button"][id*="add_opponent"],
-    button[data-baseweb="button"][id*="add_hitter"],
-    button[data-baseweb="button"][id*="save_opponent"],
-    button[data-baseweb="button"][id*="save_hitter"] {
+    /* Override for plus and save buttons: target buttons with id containing these strings */
+    button[id*="add_opponent"],
+    button[id*="add_hitter"],
+    button[id*="save_opponent"],
+    button[id*="save_hitter"] {
         background-color: gray !important;
         border: 2px solid green !important;
         color: black !important;
@@ -239,7 +238,7 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.imshow(img)
     ax.axis('off')
     ax.set_xlim(0, img.width)
-    ax.set_ylim(img.height, 0)  # Match image coordinate system
+    ax.set_ylim(img.height, 0)
     for hit in st.session_state["hit_data"]:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
