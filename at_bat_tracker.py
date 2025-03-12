@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling and the form container without blue outline
+# Inject custom CSS for global styling and the form container without the extra bar and with blue-outlined buttons
 st.markdown(
     """
     <style>
@@ -19,16 +19,16 @@ st.markdown(
     .stButton>button {
         background-color: orange;
         color: black;
-        border: none;
+        border: 2px solid blue; /* blue outline */
         padding: 10px 20px;
         border-radius: 5px;
     }
-    /* Title styling */
+    /* Title styling: removed extra margin-bottom */
     .page-title {
         text-align: center;
         color: orange;
         font-size: 2.5em;
-        margin-bottom: 20px;
+        margin-bottom: 0;
     }
     /* Game Details Form Container */
     .game-details-container {
@@ -42,7 +42,7 @@ st.markdown(
         color: orange;
         text-align: center;
     }
-    /* Style input fields (if possible) */
+    /* Style input fields */
     .game-details-container input {
         background-color: black;
         color: white;
@@ -58,7 +58,7 @@ st.markdown(
 # Display the logo image at the top
 st.image("fuel_logo.jpeg", use_container_width=True)
 
-# Display the title below the logo
+# Display the title below the logo without extra margin
 st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 
 # =============================================================================
