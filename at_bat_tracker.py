@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling and the form container
+# Inject custom CSS for global styling and the form container without blue outline
 st.markdown(
     """
     <style>
@@ -33,7 +33,6 @@ st.markdown(
     /* Game Details Form Container */
     .game-details-container {
         background-color: #121212;
-        border: 2px solid blue;
         padding: 20px;
         border-radius: 10px;
         margin: 20px auto;
@@ -43,11 +42,11 @@ st.markdown(
         color: orange;
         text-align: center;
     }
-    /* Attempt to style input fields inside the container */
+    /* Style input fields (if possible) */
     .game-details-container input {
         background-color: black;
         color: white;
-        border: 1px solid blue;
+        border: 1px solid #444;
         padding: 8px;
         border-radius: 5px;
     }
