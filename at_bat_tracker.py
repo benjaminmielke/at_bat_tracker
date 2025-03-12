@@ -294,7 +294,7 @@ elif st.session_state["stage"] == "log_hit_location":
         st.experimental_rerun()
 
 elif st.session_state["stage"] == "plot_hit_location":
-    st.header(f"Hit Location for {st.session_state['hitter_name']}")
+    #st.header(f"Hit Location for {st.session_state['hitter_name']}")
     # Load all hits for the current hitter from BigQuery.
     hits = load_hits_for_player(st.session_state["hitter_name"])
     # Load all metrics from the view.
