@@ -312,14 +312,13 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
     # Add metrics text below the title using a LaTeX array for alignment.
     if None not in (hard_hit, weak_hit, fly, line, ground):
-        # The following LaTeX uses an array with five columns. Adjust spacing as needed.
         metrics_text = (
             r"$\begin{array}{ccccc}"
-            r"\textbf{Hard Hit} & \textbf{Weak Hit} & Fly Ball & Line Drive & Ground Ball\\"
+            r"\mathbf{Hard\ Hit} & \mathbf{Weak\ Hit} & Fly\ Ball & Line\ Drive & Ground\ Ball \\"
             rf"{hard_hit}\% & {weak_hit}\% & {fly}\% & {line}\% & {ground}\%"
             r"\end{array}$"
         )
-        # Place the array a bit below the title.
+        # Adjust the y coordinate to move the text closer to the title.
         ax.text(0.5, 0.86, metrics_text, transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
