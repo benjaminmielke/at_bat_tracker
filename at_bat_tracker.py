@@ -143,7 +143,7 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key == "hit_data" else (None if key != "stage" else "game_details")
+        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
 
 # =============================================================================
 # Button Callbacks
@@ -281,8 +281,8 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Define color mapping for contact type
     contact_color = {
-        "Weak Ground Ball": "#CD853F",  # light brown (Peru)
-        "Hard Ground Ball": "#8B4513",  # dark brown (SaddleBrown)
+        "Weak Ground Ball": "#CD853F",  # light brown
+        "Hard Ground Ball": "#8B4513",  # dark brown
         "Weak Line Drive": "#90EE90",   # light green
         "Hard Line Drive": "#006400",   # dark green
         "Weak Fly Ball": "#ADD8E6",     # light blue
@@ -291,7 +291,8 @@ elif st.session_state["stage"] == "plot_hit_location":
     for hit in st.session_state["hit_data"]:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             color = contact_color.get(hit.get("contact_type", ""), "red")
-            ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=100)
+            ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=50,
+                       edgecolors="black", linewidths=1)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
