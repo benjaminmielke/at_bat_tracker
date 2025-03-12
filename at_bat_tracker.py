@@ -280,7 +280,7 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.axis('off')
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)
-    # Add a title on the image with the hitter's spray chart in black text.
+    # Add a title on the image with the hitter's spray chart (black text)
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
     # Define color mapping for contact type
     contact_color = {
@@ -297,9 +297,9 @@ elif st.session_state["stage"] == "plot_hit_location":
             color = contact_color.get(hit.get("contact_type", ""), "red")
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=50,
                        edgecolors="black", linewidths=1)
-    # Create a small legend in the lower left.
+    # Create a small legend in the lower left with a very small font.
     legend_handles = [mpatches.Patch(color=color, label=label) for label, color in contact_color.items()]
-    ax.legend(handles=legend_handles, loc="lower left", fontsize=10, frameon=False)
+    ax.legend(handles=legend_handles, loc="lower left", prop={'size': 6}, markerscale=0.5, frameon=False)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
