@@ -11,8 +11,8 @@ import uuid
 # BIGQUERY FUNCTIONS
 # =============================================================================
 def get_bigquery_client():
-    with open("hit-tracker-453205-2b4587bd9f9b.json", "r") as f:
-        service_account_info = json.load(f)
+    # Access the service account info from Streamlit secrets
+    service_account_info = st.secrets["bigquery"]
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     return bigquery.Client(credentials=credentials, project=credentials.project_id)
 
@@ -33,13 +33,6 @@ for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             st.session_state[key] = []
         else:
             st.session_state[key] = None if key != "stage" else "game_details"
-
-import uuid
-from google.cloud import bigquery
-from google.oauth2 import service_account
-import json
-from PIL import Image
-import matplotlib.pyplot as plt
 
 # --- Button callbacks ---
 def submit_game_details():
@@ -145,7 +138,6 @@ elif st.session_state.stage == "plot_hit_location":
     fig, ax = plt.subplots()
     ax.imshow(img)
     ax.axis('off')
-    ax_width, ax_height = img.size
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)  # Match Streamlit image coordinate system
 
@@ -155,7 +147,6 @@ elif st.session_state.stage == "plot_hit_location":
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
 
     st.pyplot(fig)
-
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
 elif st.session_state.stage == "reset":
