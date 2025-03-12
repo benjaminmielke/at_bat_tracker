@@ -74,11 +74,11 @@ def load_all_metrics_for_player(hitter_name):
     client = get_bigquery_client()
     query = f"""
       SELECT 
-        Hard Hit % as hard_hit, 
-        Weak Hit % as weak_hit,
-        Fly Ball % as fly,
-        Line Drive % as line,
-        Ground Ball % as ground
+        'Hard Hit %' as hard_hit, 
+        'Weak Hit %' as weak_hit,
+        'Fly Ball %' as fly,
+        'Line Drive %' as line,
+        'Ground Ball %' as ground
       FROM hit-tracker-453205.hit_tracker_data.vw_hitting_metrics
       WHERE hitter_name = '{hitter_name}'
     """
