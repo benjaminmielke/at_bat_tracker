@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling, button outlines, and horizontal button groups
+# Inject custom CSS for global styling, blue-outlined buttons, and force columns to remain in one row
 st.markdown(
     """
     <style>
@@ -31,6 +31,11 @@ st.markdown(
         font-size: 2.5em;
         margin-bottom: 0;
     }
+    /* Force horizontal columns (used by st.columns) to not wrap on mobile */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+    }
     /* Game Details Form Container */
     .game-details-container {
         background-color: #121212;
@@ -49,18 +54,6 @@ st.markdown(
         border: 1px solid #444;
         padding: 8px;
         border-radius: 5px;
-    }
-    /* Horizontal button container: force buttons to remain in one row */
-    .horizontal-buttons {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        justify-content: space-around;
-        margin-bottom: 20px;
-    }
-    .horizontal-buttons > div {
-        flex: 0 0 auto;
-        padding: 5px;
     }
     </style>
     """,
@@ -150,31 +143,25 @@ if st.session_state.stage == "game_details":
 
 elif st.session_state.stage == "select_outcome":
     st.header("Select Outcome")
-    st.markdown("<div class='horizontal-buttons'>", unsafe_allow_html=True)
     cols = st.columns(4)
     cols[0].button("SO", on_click=select_outcome, args=("Strikeout",))
     cols[1].button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",))
     cols[2].button("Walk", on_click=select_outcome, args=("Walk",))
     cols[3].button("Batted Ball", on_click=select_outcome, args=("Batted Ball",))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_batted_result":
     st.header("Select Batted Ball Result")
-    st.markdown("<div class='horizontal-buttons'>", unsafe_allow_html=True)
     cols = st.columns(3)
     cols[0].button("Error", on_click=select_batted_result, args=("Error",))
     cols[1].button("Base Hit", on_click=select_batted_result, args=("Base Hit",))
     cols[2].button("Out", on_click=select_batted_result, args=("Out",))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_contact_type":
     st.header("Select Contact Type")
-    st.markdown("<div class='horizontal-buttons'>", unsafe_allow_html=True)
     cols = st.columns(3)
     cols[0].button("Grounder", on_click=select_contact_type, args=("Grounder",))
     cols[1].button("Fly Ball", on_click=select_contact_type, args=("Fly Ball",))
     cols[2].button("Line Drive", on_click=select_contact_type, args=("Line Drive",))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "log_hit_location":
     st.header("Click on the field to log location")
