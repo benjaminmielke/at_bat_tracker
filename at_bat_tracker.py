@@ -7,6 +7,24 @@ from google.oauth2 import service_account
 import json
 import uuid
 
+# Inject custom CSS for a black background and white text
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: black;
+        color: white;
+    }
+    /* Optional: style the buttons to ensure readability */
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # =============================================================================
 # BIGQUERY FUNCTIONS
 # =============================================================================
