@@ -306,7 +306,7 @@ elif st.session_state["stage"] == "plot_hit_location":
     if hard_hit is not None and weak_hit is not None:
         # Format the two lines: first the labels, then the values.
         label_line = f"{'Hard Hit':^12}{'Weak Hit':^12}"
-        value_line = f"{hard_hit:}%{weak_hit:}%"
+        value_line = f"{hard_hit:%^12}%{weak_hit:%^12}%"
         # Place these lines closer to the title (adjust y coordinates as needed).
         ax.text(0.5, 0.99, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
         ax.text(0.5, 0.95, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
