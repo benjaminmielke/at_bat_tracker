@@ -40,11 +40,11 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
-    /* Override for plus and save buttons: target buttons with id containing these strings */
-    button[id*="add_opponent"],
-    button[id*="add_hitter"],
-    button[id*="save_opponent"],
-    button[id*="save_hitter"] {
+    /* Override for plus and save buttons - use body for higher specificity */
+    body button[id*="add_opponent"],
+    body button[id*="add_hitter"],
+    body button[id*="save_opponent"],
+    body button[id*="save_hitter"] {
         background-color: gray !important;
         border: 2px solid green !important;
         color: black !important;
@@ -109,7 +109,7 @@ def log_to_bigquery(hit_info):
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key == "hit_data" else (None if key != "stage" else "game_details")
+        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
 
 # --- Button callbacks ---
 def submit_game_details():
