@@ -13,7 +13,7 @@ def rerun_app():
         st.experimental_rerun()
 
 # =============================================================================
-# BigQuery helper functions for options, metrics, and hits
+# BigQuery helper functions for options and hits
 # =============================================================================
 def get_bigquery_client():
     service_account_info = st.secrets["bigquery"]
@@ -302,15 +302,13 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
-    # Add the metrics text below the title, formatted in two lines:
-    # First line: "Hard Hit        Weak Hit"
-    # Second line: "   44%               56%"
+    # Add metrics text below the title in two lines.
     if hard_hit is not None and weak_hit is not None:
-        label_line = f"{'Hard Hit':<15}{'Weak Hit':<15}"
-        value_line = f"{hard_hit:>15}%{weak_hit:>15}%"
-        # Adjust the y coordinates (0.85 and 0.80) as needed to be closer to the title.
-        ax.text(0.5, 0.85, label_line, transform=ax.transAxes, ha='center', fontsize=10, color='black')
-        ax.text(0.5, 0.80, value_line, transform=ax.transAxes, ha='center', fontsize=10, color='black')
+        label_line = f"{'Hard Hit':^12}{'Weak Hit':^12}"
+        value_line = f"{hard_hit:^12}%{weak_hit:^12}%"
+        # Adjust the y coordinate to be closer to the title.
+        ax.text(0.5, 0.82, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
+        ax.text(0.5, 0.78, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
