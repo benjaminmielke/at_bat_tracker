@@ -310,14 +310,12 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
-    # Add metrics text below the title in two lines.
+    # Add metrics text below the title.
     if None not in (hard_hit, weak_hit, fly, line, ground):
-        # Format the first line with labels and the second with values (with the % sign directly after the numbers).
-        label_line = f"{'Hard Hit':^15}{'Weak Hit':^15}{'Fly Ball':^15}{'Line Drive':^15}{'Ground Ball':^15}"
-        value_line = f"{hard_hit:}%             {weak_hit:}%             {fly:}%             {line:}%              {ground:}%"
-        # Adjust the y coordinates (0.86 and 0.82) to move the text closer to the title.
-        ax.text(0.5, 0.99, label_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
-        ax.text(0.5, 0.95, value_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        # Bold text for Hard Hit and Weak Hit; normal text for the rest.
+        # Adjust y positions to move the text closer to the title.
+        ax.text(0.5, 0.87, f"Hard Hit: {hard_hit}%   Weak Hit: {weak_hit}%", transform=ax.transAxes, ha='center', fontsize=7, color='black', fontweight='bold')
+        ax.text(0.5, 0.83, f"Fly Ball: {fly}%   Line Drive: {line}%   Ground Ball: {ground}%", transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
