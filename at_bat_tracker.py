@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_image_coordinates import streamlit_image_coordinates
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from PIL import Image
 from google.cloud import bigquery
 from google.oauth2 import service_account
@@ -143,7 +144,7 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key == "hit_data" else (None if key != "stage" else "game_details")
+        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
 
 # =============================================================================
 # Button Callbacks
@@ -279,7 +280,7 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.axis('off')
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)
-    # Add a title text over the image with black text
+    # Add a title on the image with the hitter's spray chart (black text)
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
     # Define color mapping for contact type
     contact_color = {
@@ -290,11 +291,15 @@ elif st.session_state["stage"] == "plot_hit_location":
         "Weak Fly Ball": "#ADD8E6",     # light blue
         "Hard Fly Ball": "#00008B"      # dark blue
     }
+    # Plot each hit dot with specified styling.
     for hit in st.session_state["hit_data"]:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             color = contact_color.get(hit.get("contact_type", ""), "red")
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=50,
                        edgecolors="black", linewidths=1)
+    # Create legend patches for each contact type.
+    legend_handles = [mpatches.Patch(color=color, label=label) for label, color in contact_color.items()]
+    ax.legend(handles=legend_handles, loc="upper right", frameon=False)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
