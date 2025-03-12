@@ -7,7 +7,17 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling and full-width buttons
+# --- Initialize additional session state for select options and add-mode flags ---
+if "opponent_options" not in st.session_state:
+    st.session_state["opponent_options"] = ["Team A", "Team B"]
+if "hitter_options" not in st.session_state:
+    st.session_state["hitter_options"] = ["Hitter 1", "Hitter 2"]
+if "adding_opponent" not in st.session_state:
+    st.session_state["adding_opponent"] = False
+if "adding_hitter" not in st.session_state:
+    st.session_state["adding_hitter"] = False
+
+# Inject custom CSS for global styling, full-width buttons, and special styling for plus buttons
 st.markdown(
     """
     <style>
@@ -26,6 +36,12 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
+    /* Special styling for plus buttons (identified by their key) */
+    button[data-key="add_opponent"],
+    button[data-key="add_hitter"] {
+        background-color: green !important;
+        color: black !important;
+    }
     /* Title styling: no extra margin-bottom */
     .page-title {
         text-align: center;
@@ -40,10 +56,6 @@ st.markdown(
         border-radius: 10px;
         margin: 20px auto;
         max-width: 500px;
-    }
-    .game-details-container h2 {
-        color: orange;
-        text-align: center;
     }
     .game-details-container input {
         background-color: black;
@@ -67,7 +79,6 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 # BIGQUERY FUNCTIONS
 # =============================================================================
 def get_bigquery_client():
-    # Access the service account info from Streamlit secrets
     service_account_info = st.secrets["bigquery"]
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     return bigquery.Client(credentials=credentials, project=credentials.project_id)
@@ -81,7 +92,7 @@ def log_to_bigquery(hit_info):
     else:
         st.success("Hit logged!")
 
-# --- Initialize session state ---
+# --- Initialize session state for general app flow ---
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
@@ -89,6 +100,9 @@ for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
 
 # --- Button callbacks ---
 def submit_game_details():
+    # Save the selected opponent and hitter from the select boxes
+    st.session_state.opponent = st.session_state.get("selected_opponent", "")
+    st.session_state.hitter_name = st.session_state.get("selected_hitter", "")
     if st.session_state.opponent and st.session_state.hitter_name:
         st.session_state.stage = "select_outcome"
     else:
@@ -131,16 +145,41 @@ def log_another_at_bat():
 if st.session_state.stage == "game_details":
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
-        st.markdown("<h2>Enter Game Details</h2>", unsafe_allow_html=True)
+        # Removed the "Enter Game Details" title as requested
         st.session_state.date = st.date_input("Select Date")
-        st.session_state.opponent = st.text_input("Opponent")
-        st.session_state.hitter_name = st.text_input("Hitter Name")
+        # Opponent field as a selectbox with an adjacent green plus button
+        col_opponent, col_opponent_add = st.columns([3, 1])
+        selected_opponent = col_opponent.selectbox("Opponent", st.session_state["opponent_options"],
+                                                   key="selected_opponent")
+        if col_opponent_add.button("+", key="add_opponent"):
+            st.session_state["adding_opponent"] = True
+        if st.session_state["adding_opponent"]:
+            new_opponent = st.text_input("New Opponent", key="new_opponent")
+            if st.button("Save Opponent", key="save_opponent"):
+                if new_opponent and new_opponent not in st.session_state["opponent_options"]:
+                    st.session_state["opponent_options"].append(new_opponent)
+                st.session_state["adding_opponent"] = False
+                st.session_state.selected_opponent = new_opponent
+                st.experimental_rerun()
+        # Hitter field as a selectbox with an adjacent green plus button
+        col_hitter, col_hitter_add = st.columns([3, 1])
+        selected_hitter = col_hitter.selectbox("Hitter", st.session_state["hitter_options"],
+                                               key="selected_hitter")
+        if col_hitter_add.button("+", key="add_hitter"):
+            st.session_state["adding_hitter"] = True
+        if st.session_state["adding_hitter"]:
+            new_hitter = st.text_input("New Hitter", key="new_hitter")
+            if st.button("Save Hitter", key="save_hitter"):
+                if new_hitter and new_hitter not in st.session_state["hitter_options"]:
+                    st.session_state["hitter_options"].append(new_hitter)
+                st.session_state["adding_hitter"] = False
+                st.session_state.selected_hitter = new_hitter
+                st.experimental_rerun()
         st.button("Next", on_click=submit_game_details)
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_outcome":
     st.header("Select At-bat Outcome")
-    # Remove the "SO" button; only one option remains:
     st.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",), key="so_looking")
     st.button("Walk", on_click=select_outcome, args=("Walk",), key="walk")
     st.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",), key="batted_ball")
