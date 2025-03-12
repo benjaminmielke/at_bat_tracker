@@ -105,7 +105,7 @@ for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
 
 # --- Button callbacks ---
 def submit_game_details():
-    # Retrieve the selections; no manual assignment to a protected key
+    # Retrieve the selections (selectbox automatically stores the value)
     st.session_state["opponent"] = st.session_state.get("selected_opponent", "")
     st.session_state["hitter_name"] = st.session_state.get("selected_hitter", "")
     if st.session_state["opponent"] and st.session_state["hitter_name"]:
@@ -151,7 +151,7 @@ if st.session_state["stage"] == "game_details":
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
         st.session_state["date"] = st.date_input("Select Date")
-        # Opponent select box with green plus button in a row
+        # Opponent select box with plus button in a row
         col_opponent, col_opponent_plus = st.columns([4, 1])
         col_opponent.selectbox("Opponent", st.session_state["opponent_options"], key="selected_opponent")
         if col_opponent_plus.button("➕", key="add_opponent"):
@@ -162,8 +162,11 @@ if st.session_state["stage"] == "game_details":
                 if new_opponent and new_opponent not in st.session_state["opponent_options"]:
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
-                st.experimental_rerun()
-        # Hitter select box with green plus button in a row
+                try:
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.write("Rerun error:", e)
+        # Hitter select box with plus button in a row
         col_hitter, col_hitter_plus = st.columns([4, 1])
         col_hitter.selectbox("Hitter", st.session_state["hitter_options"], key="selected_hitter")
         if col_hitter_plus.button("➕", key="add_hitter"):
@@ -174,7 +177,10 @@ if st.session_state["stage"] == "game_details":
                 if new_hitter and new_hitter not in st.session_state["hitter_options"]:
                     st.session_state["hitter_options"].append(new_hitter)
                 st.session_state["adding_hitter"] = False
-                st.experimental_rerun()
+                try:
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.write("Rerun error:", e)
         st.button("Next", on_click=submit_game_details)
         st.markdown("</div>", unsafe_allow_html=True)
 
