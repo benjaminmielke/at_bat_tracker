@@ -308,8 +308,8 @@ elif st.session_state["stage"] == "plot_hit_location":
         label_line = f"{'Hard Hit':^12}{'Weak Hit':^12}"
         value_line = f"{hard_hit:^12}%{weak_hit:^12}%"
         # Place these lines closer to the title (adjust y coordinates as needed).
-        ax.text(0.5, 0.70, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
-        ax.text(0.5, 0.70, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
+        ax.text(0.5, 0.90, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
+        ax.text(0.5, 0.94, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
