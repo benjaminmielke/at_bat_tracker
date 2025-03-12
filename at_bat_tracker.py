@@ -229,6 +229,7 @@ if st.session_state["stage"] == "game_details":
 elif st.session_state["stage"] == "select_outcome":
     st.header("Select At-bat Outcome")
     st.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",), key="so_looking")
+    st.button("SO Swinging", on_click=select_outcome, args=("Strikeout Swinging",), key="so_swinging")
     st.button("Walk", on_click=select_outcome, args=("Walk",), key="walk")
     st.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",), key="batted_ball")
 
@@ -273,14 +274,14 @@ elif st.session_state["stage"] == "log_hit_location":
         st.experimental_rerun()
 
 elif st.session_state["stage"] == "plot_hit_location":
+    st.header(f"Hit Location for {st.session_state['hitter_name']}")
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
     ax.axis('off')
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)
-    # Add a title on the image with the hitter's spray chart in black text.
-    ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
+    # No title on the image.
     # Define color mapping for contact type
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
@@ -299,10 +300,10 @@ elif st.session_state["stage"] == "plot_hit_location":
     # Create a legend using Line2D objects with dot markers.
     legend_elements = [
         Line2D([0], [0], marker='o', color='w', label=label,
-               markerfacecolor=color, markersize=6)
+               markerfacecolor=color, markersize=8)
         for label, color in contact_color.items()
     ]
-    ax.legend(handles=legend_elements, loc="lower left", prop={'size': 6}, frameon=False)
+    ax.legend(handles=legend_elements, loc="lower left", prop={'size': 8}, frameon=False)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
