@@ -302,13 +302,16 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
-    # Add metrics text below the title in two lines.
+    # Add the metrics text below the title in two lines:
+    # First line: "Hard Hit      Weak Hit"
+    # Second line: "   44%           56%"
     if hard_hit is not None and weak_hit is not None:
-        label_line = f"{'Hard Hit':^12}{'Weak Hit':^12}"
-        value_line = f"{hard_hit:^12}%{weak_hit:^12}%"
-        # Adjust the y coordinate to be closer to the title.
-        ax.text(0.5, 0.82, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
-        ax.text(0.5, 0.78, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
+        # Using fixed width formatting: adjust width as needed.
+        label_line = f"{'Hard Hit':<12}{'Weak Hit':<12}"
+        value_line = f"{hard_hit:>12}%{weak_hit:>12}%"
+        # Position these texts closer to the title.
+        ax.text(0.5, 0.88, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
+        ax.text(0.5, 0.84, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
@@ -325,22 +328,4 @@ elif st.session_state["stage"] == "plot_hit_location":
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=50,
                        edgecolors="black", linewidths=1)
     # Create a legend using Line2D objects with dot markers.
-    legend_elements = [
-        Line2D([0], [0], marker='o', color='w', label=label,
-               markerfacecolor=color, markersize=8)
-        for label, color in contact_color.items()
-    ]
-    ax.legend(handles=legend_elements, loc="lower left", prop={'size': 8}, frameon=False)
-    st.pyplot(fig)
-    st.button("Log Another At-Bat", on_click=log_another_at_bat)
-
-elif st.session_state["stage"] == "reset":
-    st.header("At-Bat Recorded")
-    st.write(f"Hitter: {st.session_state['hitter_name']}")
-    st.write(f"Date: {st.session_state['date']}")
-    st.write(f"Opponent: {st.session_state['opponent']}")
-    st.write(f"Outcome: {st.session_state['outcome']}")
-    if st.session_state["outcome"] == "Batted Ball":
-        st.write(f"Batted Result: {st.session_state['batted_result']}")
-        st.write(f"Contact Type: {st.session_state['contact_type']}")
-    st.button("Log Another At-Bat", on_click=log_another_at_bat)
+    legend_elements
