@@ -68,16 +68,16 @@ def log_to_bigquery(hit_info):
 if "opponent_options" not in st.session_state:
     try:
         opps = load_opponent_options()
-        st.session_state["opponent_options"] = opps if opps else ["Team A", "Team B"]
+        st.session_state["opponent_options"] = opps if opps else ["Rookies"]
     except Exception as e:
-        st.session_state["opponent_options"] = ["Team A", "Team B"]
+        st.session_state["opponent_options"] = ["Rookies"]
 
 if "hitter_options" not in st.session_state:
     try:
         hitters = load_hitter_options()
-        st.session_state["hitter_options"] = hitters if hitters else ["Hitter 1", "Hitter 2"]
+        st.session_state["hitter_options"] = hitters if hitters else ["Jack Mielke"]
     except Exception as e:
-        st.session_state["hitter_options"] = ["Hitter 1", "Hitter 2"]
+        st.session_state["hitter_options"] = ["Jack Mielke"]
 
 # Also initialize flags for add-mode.
 if "adding_opponent" not in st.session_state:
