@@ -67,6 +67,7 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 # BIGQUERY FUNCTIONS
 # =============================================================================
 def get_bigquery_client():
+    # Access the service account info from Streamlit secrets
     service_account_info = st.secrets["bigquery"]
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     return bigquery.Client(credentials=credentials, project=credentials.project_id)
@@ -81,7 +82,7 @@ def log_to_bigquery(hit_info):
         st.success("Hit logged!")
 
 # --- Initialize session state ---
-for key in ["stage", "hit_data", "img_click_data", "date", "opponent", 
+for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
         st.session_state[key] = [] if key=="hit_data" else (None if key != "stage" else "game_details")
@@ -180,7 +181,6 @@ elif st.session_state.stage == "log_hit_location":
 
 elif st.session_state.stage == "plot_hit_location":
     st.header(f"Hit Location for {st.session_state.hitter_name}")
-    # Use the same plotting logic as the first code:
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
