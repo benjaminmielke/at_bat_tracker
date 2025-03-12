@@ -60,14 +60,12 @@ def log_to_bigquery(hit_info):
         st.success("Hit logged!")
 
 def load_hits_for_player(hitter_name):
-    """Query all hit records from BigQuery for the given hitter."""
     client = get_bigquery_client()
     query = f"""
         SELECT * FROM `hit-tracker-453205.hit_tracker_data.fact_hit_log`
         WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
-    # Convert rows to dictionaries.
     hits = [dict(row) for row in results]
     return hits
 
@@ -284,7 +282,7 @@ elif st.session_state["stage"] == "log_hit_location":
 
 elif st.session_state["stage"] == "plot_hit_location":
     st.header(f"Hit Location for {st.session_state['hitter_name']}")
-    # Load all hits for the current hitter from BigQuery
+    # Load all hits for the current hitter from BigQuery.
     hits = load_hits_for_player(st.session_state["hitter_name"])
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
@@ -292,7 +290,9 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.axis('off')
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)
-    # Define color mapping for contact type
+    # Add the title on the image: "<Hitter Name> Spray Chart"
+    ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
+    # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
         "Hard Ground Ball": "#8B4513",  # dark brown
