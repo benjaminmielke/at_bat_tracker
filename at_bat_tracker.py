@@ -66,18 +66,26 @@ def load_hits_for_player(hitter_name):
     results = client.query(query).result()
     return [dict(row) for row in results]
 
-def load_metrics_for_player(hitter_name):
-    """Query the view vw_hitting_metrics to retrieve Hard Hit % and Weak Hit %."""
+def load_all_metrics_for_player(hitter_name):
+    """
+    Query the view vw_hitting_metrics to retrieve all the percentage metrics:
+      Hard Hit %, Weak Hit %, Fly Ball %, Line Drive %, Ground Ball %.
+    """
     client = get_bigquery_client()
     query = f"""
-      SELECT `Hard Hit %` as hard_hit, `Weak Hit %` as weak_hit
+      SELECT 
+        `Hard Hit %` as hard_hit, 
+        `Weak Hit %` as weak_hit,
+        `Fly Ball %` as fly,
+        `Line Drive %` as line,
+        `Ground Ball %` as ground
       FROM `hit-tracker-453205.hit_tracker_data.vw_hitting_metrics`
       WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
     for row in results:
-        return row.hard_hit, row.weak_hit
-    return None, None
+        return row.hard_hit, row.weak_hit, row.fly, row.line, row.ground
+    return None, None, None, None, None
 
 # =============================================================================
 # Load Options on Startup
@@ -292,8 +300,8 @@ elif st.session_state["stage"] == "plot_hit_location":
     st.header(f"Hit Location for {st.session_state['hitter_name']}")
     # Load all hits for the current hitter from BigQuery.
     hits = load_hits_for_player(st.session_state["hitter_name"])
-    # Also load the metrics from the view.
-    hard_hit, weak_hit = load_metrics_for_player(st.session_state["hitter_name"])
+    # Load all metrics from the view.
+    hard_hit, weak_hit, fly, line, ground = load_all_metrics_for_player(st.session_state["hitter_name"])
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
@@ -302,14 +310,14 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
-    # Add metrics text below the title.
-    if hard_hit is not None and weak_hit is not None:
-        # Format the two lines: first the labels, then the values.
-        label_line = f"{'Hard Hit':^12}{'Weak Hit':^12}"
-        value_line = f"{hard_hit:}%           {weak_hit:}%"
-        # Place these lines closer to the title (adjust y coordinates as needed).
-        ax.text(0.5, 0.99, label_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
-        ax.text(0.5, 0.95, value_line, transform=ax.transAxes, ha='center', fontsize=8, color='black')
+    # Add metrics text below the title in two lines.
+    if None not in (hard_hit, weak_hit, fly, line, ground):
+        # Format the first line with labels and the second with values (with the % sign directly after the numbers).
+        label_line = f"{'Hard Hit':^10}{'Weak Hit':^10}{'Fly Ball':^10}{'Line Drive':^12}{'Ground Ball':^12}"
+        value_line = f"{hard_hit:^10}%{weak_hit:^10}%{fly:^10}%{line:^12}%{ground:^12}%"
+        # Adjust the y coordinates (0.86 and 0.82) to move the text closer to the title.
+        ax.text(0.5, 0.86, label_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        ax.text(0.5, 0.82, value_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
