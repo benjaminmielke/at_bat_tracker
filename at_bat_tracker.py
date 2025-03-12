@@ -22,7 +22,7 @@ if "adding_opponent" not in st.session_state:
 if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
 
-# Inject custom CSS for global styling, main buttons, and for plus/save buttons.
+# Inject custom CSS for global styling, main buttons, and override for plus/save buttons.
 st.markdown(
     """
     <style>
@@ -41,14 +41,14 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
-    /* Override plus and save buttons: gray background with green outline */
-    button[id*="add_opponent"],
-    button[id*="add_hitter"],
-    button[id*="save_opponent"],
-    button[id*="save_hitter"] {
+    /* Override plus and save buttons using Base Web attribute */
+    button[data-baseweb="button"][id*="add_opponent"],
+    button[data-baseweb="button"][id*="add_hitter"],
+    button[data-baseweb="button"][id*="save_opponent"],
+    button[data-baseweb="button"][id*="save_hitter"] {
         background-color: gray !important;
-        color: black !important;
         border: 2px solid green !important;
+        color: black !important;
         padding: 5px 10px !important;
         font-size: 1.2em !important;
         width: auto !important;
@@ -114,7 +114,6 @@ for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
 
 # --- Button callbacks ---
 def submit_game_details():
-    # The selectbox widgets automatically store their values under "selected_opponent" and "selected_hitter"
     st.session_state["opponent"] = st.session_state.get("selected_opponent", "")
     st.session_state["hitter_name"] = st.session_state.get("selected_hitter", "")
     if st.session_state["opponent"] and st.session_state["hitter_name"]:
