@@ -140,7 +140,7 @@ if st.session_state.stage == "game_details":
 
 elif st.session_state.stage == "select_outcome":
     st.header("Select At-bat Outcome")
-    st.button("SO", on_click=select_outcome, args=("Strikeout",), key="so")
+    # Remove the "SO" button; only one option remains:
     st.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",), key="so_looking")
     st.button("Walk", on_click=select_outcome, args=("Walk",), key="walk")
     st.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",), key="batted_ball")
@@ -148,14 +148,20 @@ elif st.session_state.stage == "select_outcome":
 elif st.session_state.stage == "select_batted_result":
     st.header("Select Hit Result")
     st.button("Error", on_click=select_batted_result, args=("Error",), key="error")
-    st.button("Base Hit", on_click=select_batted_result, args=("Base Hit",), key="base_hit")
+    st.button("Single", on_click=select_batted_result, args=("Single",), key="single")
+    st.button("Double", on_click=select_batted_result, args=("Double",), key="double")
+    st.button("Triple", on_click=select_batted_result, args=("Triple",), key="triple")
+    st.button("Homerun", on_click=select_batted_result, args=("Homerun",), key="homerun")
     st.button("Out", on_click=select_batted_result, args=("Out",), key="out")
 
 elif st.session_state.stage == "select_contact_type":
     st.header("Select Contact Type")
-    st.button("Grounder", on_click=select_contact_type, args=("Grounder",), key="grounder")
-    st.button("Fly Ball", on_click=select_contact_type, args=("Fly Ball",), key="fly_ball")
-    st.button("Line Drive", on_click=select_contact_type, args=("Line Drive",), key="line_drive")
+    st.button("Weak Ground Ball", on_click=select_contact_type, args=("Weak Ground Ball",), key="weak_ground_ball")
+    st.button("Hard Ground Ball", on_click=select_contact_type, args=("Hard Ground Ball",), key="hard_ground_ball")
+    st.button("Weak Line Drive", on_click=select_contact_type, args=("Weak Line Drive",), key="weak_line_drive")
+    st.button("Hard Line Drive", on_click=select_contact_type, args=("Hard Line Drive",), key="hard_line_drive")
+    st.button("Weak Fly Ball", on_click=select_contact_type, args=("Weak Fly Ball",), key="weak_fly_ball")
+    st.button("Hard Fly Ball", on_click=select_contact_type, args=("Hard Fly Ball",), key="hard_fly_ball")
 
 elif st.session_state.stage == "log_hit_location":
     st.header("Double press on the field to log location")
