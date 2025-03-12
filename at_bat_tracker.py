@@ -67,25 +67,22 @@ def load_hits_for_player(hitter_name):
     return [dict(row) for row in results]
 
 def load_all_metrics_for_player(hitter_name):
-    """
-    Query the view vw_hitting_metrics to retrieve all the percentage metrics:
-      Hard Hit %, Weak Hit %, Fly Ball %, Line Drive %, Ground Ball %.
-    """
     client = get_bigquery_client()
     query = f"""
-      SELECT 
-        "Hard Hit %" as hard_hit, 
-        "Weak Hit %" as weak_hit,
-        "Fly Ball %" as fly,
-        "Line Drive %" as line,
-        "Ground Ball %" as ground
-      FROM hit-tracker-453205.hit_tracker_data.vw_hitting_metrics
-      WHERE hitter_name = '{hitter_name}'
+        SELECT 
+          `Hard Hit %` as hard_hit, 
+          `Weak Hit %` as weak_hit,
+          `Fly Ball %` as fly,
+          `Line Drive %` as line,
+          `Ground Ball %` as ground
+        FROM `hit-tracker-453205.hit_tracker_data.vw_hitting_metrics`
+        WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
     for row in results:
         return row.hard_hit, row.weak_hit, row.fly, row.line, row.ground
     return None, None, None, None, None
+
 
 # =============================================================================
 # Load Options on Startup
