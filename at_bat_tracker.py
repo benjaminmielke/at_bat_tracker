@@ -297,13 +297,13 @@ elif st.session_state["stage"] == "plot_hit_location":
             color = contact_color.get(hit.get("contact_type", ""), "red")
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=50,
                        edgecolors="black", linewidths=1)
-    # Create a small legend with dot markers in the lower left corner.
+    # Create a legend using Line2D objects with dot markers.
     legend_elements = [
         Line2D([0], [0], marker='o', color='w', label=label,
-               markerfacecolor=color, markersize=4)
+               markerfacecolor=color, markersize=6)
         for label, color in contact_color.items()
     ]
-    ax.legend(handles=legend_elements, loc="lower left", prop={'size': 4}, frameon=False)
+    ax.legend(handles=legend_elements, loc="lower left", prop={'size': 6}, frameon=False)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
