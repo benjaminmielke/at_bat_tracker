@@ -7,6 +7,11 @@ from google.oauth2 import service_account
 import json
 import uuid
 
+# Helper to rerun the app if possible.
+def rerun_app():
+    if hasattr(st, "experimental_rerun"):
+        st.experimental_rerun()
+
 # --- Initialize additional session state for select options and add-mode flags ---
 if "opponent_options" not in st.session_state:
     st.session_state["opponent_options"] = ["Team A", "Team B"]
@@ -105,7 +110,7 @@ for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
 
 # --- Button callbacks ---
 def submit_game_details():
-    # Retrieve the selections (selectbox automatically stores the value)
+    # The selectbox widgets automatically store the value in st.session_state["selected_opponent"] and st.session_state["selected_hitter"]
     st.session_state["opponent"] = st.session_state.get("selected_opponent", "")
     st.session_state["hitter_name"] = st.session_state.get("selected_hitter", "")
     if st.session_state["opponent"] and st.session_state["hitter_name"]:
@@ -162,10 +167,7 @@ if st.session_state["stage"] == "game_details":
                 if new_opponent and new_opponent not in st.session_state["opponent_options"]:
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
-                try:
-                    st.experimental_rerun()
-                except Exception as e:
-                    st.write("Rerun error:", e)
+                rerun_app()
         # Hitter select box with plus button in a row
         col_hitter, col_hitter_plus = st.columns([4, 1])
         col_hitter.selectbox("Hitter", st.session_state["hitter_options"], key="selected_hitter")
@@ -177,10 +179,7 @@ if st.session_state["stage"] == "game_details":
                 if new_hitter and new_hitter not in st.session_state["hitter_options"]:
                     st.session_state["hitter_options"].append(new_hitter)
                 st.session_state["adding_hitter"] = False
-                try:
-                    st.experimental_rerun()
-                except Exception as e:
-                    st.write("Rerun error:", e)
+                rerun_app()
         st.button("Next", on_click=submit_game_details)
         st.markdown("</div>", unsafe_allow_html=True)
 
