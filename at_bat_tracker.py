@@ -310,17 +310,17 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
-    # Add metrics text below the title using math text to bold Hard Hit and Weak Hit.
+    # Add metrics text below the title using a LaTeX array for alignment.
     if None not in (hard_hit, weak_hit, fly, line, ground):
-        # Create a text string with math formatting for the bold parts.
-        # The first line: Bold for Hard Hit and Weak Hit, normal for the others.
-        label_line = r"$\mathbf{Hard\ Hit}$".center(15) + r"$\mathbf{Weak\ Hit}$".center(15) + "Fly Ball".center(15) + "Line Drive".center(15) + "Ground Ball".center(15)
-        # The second line: Bold for Hard Hit and Weak Hit values, normal for the others.
-        value_line = r"$\mathbf{" + str(hard_hit) + "}$" + "%" + r"        $\mathbf{" + str(weak_hit) + "}$" + "%" + f"{fly}%" + f"{line}%" + f"{ground}%"
-        # Instead of relying on Python string centering (which may not render as expected in mathtext),
-        # we use ax.text with fixed positions. Adjust the formatting manually:
-        ax.text(0.5, 0.99, r"$\mathbf{Hard\ Hit}\quad\mathbf{Weak\ Hit}\quad Fly\ Ball\quad Line\ Drive\quad Ground\ Ball$", transform=ax.transAxes, ha='center', fontsize=7, color='black')
-        ax.text(0.5, 0.95, rf"$\mathbf{{{hard_hit}}}\% \quad \mathbf{{{weak_hit}}}\% \quad {fly}\% \quad {line}\% \quad {ground}\%$", transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        # The following LaTeX uses an array with five columns. Adjust spacing as needed.
+        metrics_text = (
+            r"$\begin{array}{ccccc}"
+            r"\textbf{Hard Hit} & \textbf{Weak Hit} & Fly Ball & Line Drive & Ground Ball\\"
+            rf"{hard_hit}\% & {weak_hit}\% & {fly}\% & {line}\% & {ground}\%"
+            r"\end{array}$"
+        )
+        # Place the array a bit below the title.
+        ax.text(0.5, 0.86, metrics_text, transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
