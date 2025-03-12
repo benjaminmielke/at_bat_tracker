@@ -50,7 +50,7 @@ def save_hitter_to_bigquery(new_hitter):
         st.error("Error saving hitter: " + str(errors))
 
 # =============================================================================
-# Other BigQuery functions (for logging hits)
+# Other BigQuery function for logging hits
 # =============================================================================
 def log_to_bigquery(hit_info):
     client = get_bigquery_client()
@@ -64,29 +64,27 @@ def log_to_bigquery(hit_info):
 # =============================================================================
 # Load Options on Startup
 # =============================================================================
-# Try to load opponent options from BigQuery; if error or empty, set defaults.
 if "opponent_options" not in st.session_state:
     try:
         opps = load_opponent_options()
-        st.session_state["opponent_options"] = opps if opps else ["Rookies"]
+        st.session_state["opponent_options"] = opps if opps else ["Team A", "Team B"]
     except Exception as e:
-        st.session_state["opponent_options"] = ["Rookies"]
+        st.session_state["opponent_options"] = ["Team A", "Team B"]
 
 if "hitter_options" not in st.session_state:
     try:
         hitters = load_hitter_options()
-        st.session_state["hitter_options"] = hitters if hitters else ["Jack Mielke"]
+        st.session_state["hitter_options"] = hitters if hitters else ["Hitter 1", "Hitter 2"]
     except Exception as e:
-        st.session_state["hitter_options"] = ["Jack Mielke"]
+        st.session_state["hitter_options"] = ["Hitter 1", "Hitter 2"]
 
-# Also initialize flags for add-mode.
 if "adding_opponent" not in st.session_state:
     st.session_state["adding_opponent"] = False
 if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
 
 # =============================================================================
-# Global CSS (keeping your original main button CSS)
+# Global CSS
 # =============================================================================
 st.markdown(
     """
@@ -145,13 +143,12 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
+        st.session_state[key] = [] if key == "hit_data" else (None if key != "stage" else "game_details")
 
 # =============================================================================
 # Button Callbacks
 # =============================================================================
 def submit_game_details():
-    # The selectbox widgets store their values in st.session_state["selected_opponent"] and ["selected_hitter"]
     st.session_state["opponent"] = st.session_state.get("selected_opponent", "")
     st.session_state["hitter_name"] = st.session_state.get("selected_hitter", "")
     if st.session_state["opponent"] and st.session_state["hitter_name"]:
@@ -208,7 +205,6 @@ if st.session_state["stage"] == "game_details":
             new_opponent = st.text_input("New Opponent", key="new_opponent")
             if st.button("Save Opponent", key="save_opponent"):
                 if new_opponent and new_opponent not in st.session_state["opponent_options"]:
-                    # Save to BigQuery table and update options
                     save_opponent_to_bigquery(new_opponent)
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
@@ -222,7 +218,6 @@ if st.session_state["stage"] == "game_details":
             new_hitter = st.text_input("New Hitter", key="new_hitter")
             if st.button("Save Hitter", key="save_hitter"):
                 if new_hitter and new_hitter not in st.session_state["hitter_options"]:
-                    # Save to BigQuery table and update options
                     save_hitter_to_bigquery(new_hitter)
                     st.session_state["hitter_options"].append(new_hitter)
                 st.session_state["adding_hitter"] = False
@@ -284,9 +279,19 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.axis('off')
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)
+    # Define color mapping for contact type
+    contact_color = {
+        "Weak Ground Ball": "#CD853F",  # light brown (Peru)
+        "Hard Ground Ball": "#8B4513",  # dark brown (SaddleBrown)
+        "Weak Line Drive": "#90EE90",   # light green
+        "Hard Line Drive": "#006400",   # dark green
+        "Weak Fly Ball": "#ADD8E6",     # light blue
+        "Hard Fly Ball": "#00008B"      # dark blue
+    }
     for hit in st.session_state["hit_data"]:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
-            ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
+            color = contact_color.get(hit.get("contact_type", ""), "red")
+            ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=100)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
 
