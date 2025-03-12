@@ -314,7 +314,7 @@ elif st.session_state["stage"] == "plot_hit_location":
     if None not in (hard_hit, weak_hit, fly, line, ground):
         # Format the first line with labels and the second with values (with the % sign directly after the numbers).
         label_line = f"{'Hard Hit':^15}{'Weak Hit':^15}{'Fly Ball':^15}{'Line Drive':^15}{'Ground Ball':^15}"
-        value_line = f"{hard_hit:}%             {weak_hit:}%             {fly:}%              {line:}%              {ground:}%"
+        value_line = f"{hard_hit:}%             {weak_hit:}%             {fly:}%             {line:}%              {ground:}%"
         # Adjust the y coordinates (0.86 and 0.82) to move the text closer to the title.
         ax.text(0.5, 0.99, label_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
         ax.text(0.5, 0.95, value_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
