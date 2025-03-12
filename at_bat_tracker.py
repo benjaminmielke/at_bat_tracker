@@ -143,7 +143,7 @@ st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
+        st.session_state[key] = [] if key == "hit_data" else (None if key != "stage" else "game_details")
 
 # =============================================================================
 # Button Callbacks
@@ -279,6 +279,8 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.axis('off')
     ax.set_xlim(0, img.width)
     ax.set_ylim(img.height, 0)
+    # Add a title text over the image (centered) displaying the hitter's name Spray Chart
+    ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='white', pad=20)
     # Define color mapping for contact type
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
