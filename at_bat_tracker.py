@@ -7,26 +7,60 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for a black background, white text, and adjust other elements as needed
+# Inject custom CSS for global styling and the form container
 st.markdown(
     """
     <style>
+    /* Global styling */
     .stApp {
         background-color: black;
         color: white;
     }
-    /* Optional: style the buttons to ensure readability */
     .stButton>button {
-        background-color: #4CAF50;
+        background-color: orange;
+        color: black;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+    }
+    /* Title styling */
+    .page-title {
+        text-align: center;
+        color: orange;
+        font-size: 2.5em;
+        margin-bottom: 20px;
+    }
+    /* Game Details Form Container */
+    .game-details-container {
+        background-color: #121212;
+        border: 2px solid blue;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px auto;
+        max-width: 500px;
+    }
+    .game-details-container h2 {
+        color: orange;
+        text-align: center;
+    }
+    /* Attempt to style input fields inside the container */
+    .game-details-container input {
+        background-color: black;
         color: white;
+        border: 1px solid blue;
+        padding: 8px;
+        border-radius: 5px;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Updated Title: "Log At Bat", centered and orange
-st.markdown("<h1 style='text-align: center; color: orange;'>Log At Bat</h1>", unsafe_allow_html=True)
+# Display the logo image at the top
+st.image("fuel_logo.jpeg", use_container_width=True)
+
+# Display the title below the logo
+st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 
 # =============================================================================
 # BIGQUERY FUNCTIONS
@@ -96,14 +130,16 @@ def log_another_at_bat():
     st.session_state.img_click_data = None
 
 # --- UI Starts here ---
-st.image("fuel_logo.jpeg", use_container_width=True)
-
 if st.session_state.stage == "game_details":
-    st.header("Enter Game Details")
-    st.session_state.date = st.date_input("Select Date")
-    st.session_state.opponent = st.text_input("Opponent")
-    st.session_state.hitter_name = st.text_input("Hitter Name")
-    st.button("Next", on_click=submit_game_details)
+    # Wrap the Enter Game Details form in a styled container
+    with st.container():
+        st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
+        st.markdown("<h2>Enter Game Details</h2>", unsafe_allow_html=True)
+        st.session_state.date = st.date_input("Select Date")
+        st.session_state.opponent = st.text_input("Opponent")
+        st.session_state.hitter_name = st.text_input("Hitter Name")
+        st.button("Next", on_click=submit_game_details)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_outcome":
     st.header("Select Outcome")
