@@ -273,7 +273,6 @@ elif st.session_state["stage"] == "log_hit_location":
         st.experimental_rerun()
 
 elif st.session_state["stage"] == "plot_hit_location":
-    st.header(f"Hit Location for {st.session_state['hitter_name']}")
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
