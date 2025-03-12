@@ -22,13 +22,13 @@ def get_bigquery_client():
 
 def load_opponent_options():
     client = get_bigquery_client()
-    query = "SELECT opponent FROM hit-tracker-453205.hit_tracker_data.dim_opponents"
+    query = "SELECT opponent FROM `hit-tracker-453205.hit_tracker_data.dim_opponents`"
     results = client.query(query).result()
     return [row.opponent for row in results]
 
 def load_hitter_options():
     client = get_bigquery_client()
-    query = "SELECT hitter FROM hit-tracker-453205.hit_tracker_data.dim_hitters"
+    query = "SELECT hitter FROM `hit-tracker-453205.hit_tracker_data.dim_hitters`"
     results = client.query(query).result()
     return [row.hitter for row in results]
 
@@ -60,7 +60,7 @@ def log_to_bigquery(hit_info):
 def load_hits_for_player(hitter_name):
     client = get_bigquery_client()
     query = f"""
-        SELECT * FROM hit-tracker-453205.hit_tracker_data.fact_hit_log
+        SELECT * FROM `hit-tracker-453205.hit_tracker_data.fact_hit_log`
         WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
@@ -74,12 +74,12 @@ def load_all_metrics_for_player(hitter_name):
     client = get_bigquery_client()
     query = f"""
       SELECT 
-        Hard Hit % as hard_hit, 
-        Weak Hit % as weak_hit,
-        Fly Ball % as fly,
-        Line Drive % as line,
-        Ground Ball % as ground
-      FROM hit-tracker-453205.hit_tracker_data.vw_hitting_metrics
+        `Hard Hit %` as hard_hit, 
+        `Weak Hit %` as weak_hit,
+        `Fly Ball %` as fly,
+        `Line Drive %` as line,
+        `Ground Ball %` as ground
+      FROM `hit-tracker-453205.hit_tracker_data.vw_hitting_metrics`
       WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
@@ -306,13 +306,14 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
     # Add metrics text below the title using a LaTeX array for alignment.
     if None not in (hard_hit, weak_hit, fly, line, ground):
+        # Construct the metrics text with a LaTeX array.
         metrics_text = (
             r"$\begin{array}{ccccc}"
-            r"\mathbf{Hard\ Hit} & \mathbf{Weak\ Hit} & Fly\ Ball & Line\ Drive & Ground\ Ball \\"
+            r"\mathbf{Hard Hit} & \mathbf{Weak Hit} & Fly Ball & Line Drive & Ground Ball \\ "
             rf"{hard_hit}\% & {weak_hit}\% & {fly}\% & {line}\% & {ground}\%"
             r"\end{array}$"
         )
-        # Adjust the y coordinate to move the text closer to the title.
+        # Place the array at y=0.86 (adjust as needed).
         ax.text(0.5, 0.86, metrics_text, transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
@@ -323,7 +324,8 @@ elif st.session_state["stage"] == "plot_hit_location":
         "Weak Fly Ball": "#ADD8E6",     # light blue
         "Hard Fly Ball": "#00008B"      # dark blue
     }
-    # Plot each hit with specified styling. If batted_result is "Out", plot an X marker.
+    # Plot each hit dot with specified styling.
+    # If the hit's batted_result is "Out", use an 'x' marker; otherwise, use an 'o'.
     for hit in hits:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             color = contact_color.get(hit.get("contact_type", ""), "red")
