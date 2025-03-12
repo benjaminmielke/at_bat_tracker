@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 import json
 import uuid
 
-# Inject custom CSS for global styling, blue-outlined buttons, and force columns to remain in one row
+# Inject custom CSS for global styling, button outlines, and to force columns to not wrap
 st.markdown(
     """
     <style>
@@ -23,6 +23,7 @@ st.markdown(
         border: 2px solid blue;
         padding: 10px 20px;
         border-radius: 5px;
+        width: 100%;
     }
     /* Title styling: no extra margin-bottom */
     .page-title {
@@ -30,11 +31,6 @@ st.markdown(
         color: orange;
         font-size: 2.5em;
         margin-bottom: 0;
-    }
-    /* Force horizontal columns (used by st.columns) to not wrap on mobile */
-    [data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap !important;
-        overflow-x: auto;
     }
     /* Game Details Form Container */
     .game-details-container {
@@ -54,6 +50,14 @@ st.markdown(
         border: 1px solid #444;
         padding: 8px;
         border-radius: 5px;
+    }
+    /* Force Streamlit's horizontal block (st.columns) to never wrap */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap;
+    }
+    [data-testid="stHorizontalBlock"] > div {
+        flex: 1 1 0;
+        padding: 5px;
     }
     </style>
     """,
