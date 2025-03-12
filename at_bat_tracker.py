@@ -22,13 +22,13 @@ def get_bigquery_client():
 
 def load_opponent_options():
     client = get_bigquery_client()
-    query = "SELECT opponent FROM `hit-tracker-453205.hit_tracker_data.dim_opponents`"
+    query = "SELECT opponent FROM hit-tracker-453205.hit_tracker_data.dim_opponents"
     results = client.query(query).result()
     return [row.opponent for row in results]
 
 def load_hitter_options():
     client = get_bigquery_client()
-    query = "SELECT hitter FROM `hit-tracker-453205.hit_tracker_data.dim_hitters`"
+    query = "SELECT hitter FROM hit-tracker-453205.hit_tracker_data.dim_hitters"
     results = client.query(query).result()
     return [row.hitter for row in results]
 
@@ -60,7 +60,7 @@ def log_to_bigquery(hit_info):
 def load_hits_for_player(hitter_name):
     client = get_bigquery_client()
     query = f"""
-        SELECT * FROM `hit-tracker-453205.hit_tracker_data.fact_hit_log`
+        SELECT * FROM hit-tracker-453205.hit_tracker_data.fact_hit_log
         WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
@@ -74,12 +74,12 @@ def load_all_metrics_for_player(hitter_name):
     client = get_bigquery_client()
     query = f"""
       SELECT 
-        `Hard Hit %` as hard_hit, 
-        `Weak Hit %` as weak_hit,
-        `Fly Ball %` as fly,
-        `Line Drive %` as line,
-        `Ground Ball %` as ground
-      FROM `hit-tracker-453205.hit_tracker_data.vw_hitting_metrics`
+        Hard Hit % as hard_hit, 
+        Weak Hit % as weak_hit,
+        Fly Ball % as fly,
+        Line Drive % as line,
+        Ground Ball % as ground
+      FROM hit-tracker-453205.hit_tracker_data.vw_hitting_metrics
       WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
@@ -113,10 +113,12 @@ if "adding_hitter" not in st.session_state:
 st.markdown(
     """
     <style>
+    /* Global styling */
     .stApp {
         background-color: black;
         color: white;
     }
+    /* Main buttons: full-width blue-outlined with orange background */
     .stButton > button {
         background-color: orange;
         color: black;
@@ -126,12 +128,14 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
+    /* Title styling */
     .page-title {
         text-align: center;
         color: orange;
         font-size: 2.5em;
         margin-bottom: 0;
     }
+    /* Game Details Form Container */
     .game-details-container {
         background-color: #121212;
         padding: 20px;
@@ -216,6 +220,7 @@ if st.session_state["stage"] == "game_details":
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
         st.session_state["date"] = st.date_input("Select Date")
+        # Opponent select box with plus button in a row
         col_opponent, col_opponent_plus = st.columns([4, 1])
         col_opponent.selectbox("Opponent", st.session_state["opponent_options"], key="selected_opponent")
         if col_opponent_plus.button("➕", key="add_opponent"):
@@ -228,6 +233,7 @@ if st.session_state["stage"] == "game_details":
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
                 rerun_app()
+        # Hitter select box with plus button in a row
         col_hitter, col_hitter_plus = st.columns([4, 1])
         col_hitter.selectbox("Hitter", st.session_state["hitter_options"], key="selected_hitter")
         if col_hitter_plus.button("➕", key="add_hitter"):
@@ -304,17 +310,14 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
-    # Add metrics text below the title using a LaTeX array for alignment.
+    # Add metrics text below the title in two lines.
     if None not in (hard_hit, weak_hit, fly, line, ground):
-        # Construct the metrics text with a LaTeX array.
-        metrics_text = (
-            r"$\begin{array}{ccccc}"
-            r"\mathbf{Hard Hit} & \mathbf{Weak Hit} & Fly Ball & Line Drive & Ground Ball \\ "
-            rf"{hard_hit}\% & {weak_hit}\% & {fly}\% & {line}\% & {ground}\%"
-            r"\end{array}$"
-        )
-        # Place the array at y=0.86 (adjust as needed).
-        ax.text(0.5, 0.86, metrics_text, transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        # Format the first line with labels and the second with values (with the % sign directly after the numbers).
+        label_line = f"{'Hard Hit':^15}{'Weak Hit':^15}{'Fly Ball':^15}{'Line Drive':^15}{'Ground Ball':^15}"
+        value_line = f"{hard_hit:}%             {weak_hit:}%             {fly:}%             {line:}%              {ground:}%"
+        # Adjust the y coordinates (0.86 and 0.82) to move the text closer to the title.
+        ax.text(0.5, 0.99, label_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
+        ax.text(0.5, 0.95, value_line, transform=ax.transAxes, ha='center', fontsize=7, color='black')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
@@ -325,13 +328,11 @@ elif st.session_state["stage"] == "plot_hit_location":
         "Hard Fly Ball": "#00008B"      # dark blue
     }
     # Plot each hit dot with specified styling.
-    # If the hit's batted_result is "Out", use an 'x' marker; otherwise, use an 'o'.
     for hit in hits:
         if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             color = contact_color.get(hit.get("contact_type", ""), "red")
-            marker = 'x' if hit.get("batted_result") == "Out" else 'o'
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color=color, s=50,
-                       marker=marker, edgecolors="black", linewidths=1)
+                       edgecolors="black", linewidths=1)
     # Create a legend using Line2D objects with dot markers.
     legend_elements = [
         Line2D([0], [0], marker='o', color='w', label=label,
