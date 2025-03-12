@@ -22,7 +22,7 @@ if "adding_opponent" not in st.session_state:
 if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
 
-# Inject custom CSS for global styling, full-width buttons, and plus/save buttons styling
+# Inject custom CSS for global styling, main buttons, and for plus/save buttons.
 st.markdown(
     """
     <style>
@@ -31,7 +31,7 @@ st.markdown(
         background-color: black;
         color: white;
     }
-    /* Full-width blue-outlined buttons with orange background for main buttons */
+    /* Main buttons: full-width blue-outlined with orange background */
     .stButton>button {
         background-color: orange;
         color: black;
@@ -41,17 +41,18 @@ st.markdown(
         width: 100%;
         margin-bottom: 10px;
     }
-    /* Plus and Save buttons: gray background with green outline */
-    button[data-key="add_opponent"],
-    button[data-key="add_hitter"],
-    button[data-key="save_opponent"],
-    button[data-key="save_hitter"] {
+    /* Override plus and save buttons: gray background with green outline */
+    button[id*="add_opponent"],
+    button[id*="add_hitter"],
+    button[id*="save_opponent"],
+    button[id*="save_hitter"] {
         background-color: gray !important;
         color: black !important;
         border: 2px solid green !important;
-        width: auto !important;
         padding: 5px 10px !important;
         font-size: 1.2em !important;
+        width: auto !important;
+        margin-bottom: 0 !important;
     }
     /* Title styling */
     .page-title {
