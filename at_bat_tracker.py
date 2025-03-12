@@ -139,14 +139,14 @@ if st.session_state.stage == "game_details":
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif st.session_state.stage == "select_outcome":
-    st.header("Select Outcome")
+    st.header("Select At-bat Outcome")
     st.button("SO", on_click=select_outcome, args=("Strikeout",), key="so")
     st.button("SO Looking", on_click=select_outcome, args=("Strikeout Looking",), key="so_looking")
     st.button("Walk", on_click=select_outcome, args=("Walk",), key="walk")
     st.button("Batted Ball", on_click=select_outcome, args=("Batted Ball",), key="batted_ball")
 
 elif st.session_state.stage == "select_batted_result":
-    st.header("Select Batted Ball Result")
+    st.header("Select Hit Result")
     st.button("Error", on_click=select_batted_result, args=("Error",), key="error")
     st.button("Base Hit", on_click=select_batted_result, args=("Base Hit",), key="base_hit")
     st.button("Out", on_click=select_batted_result, args=("Out",), key="out")
@@ -158,7 +158,7 @@ elif st.session_state.stage == "select_contact_type":
     st.button("Line Drive", on_click=select_contact_type, args=("Line Drive",), key="line_drive")
 
 elif st.session_state.stage == "log_hit_location":
-    st.header("Click on the field to log location")
+    st.header("Double press on the field to log location")
     img = Image.open("baseball_field_image.png")
     click_data = streamlit_image_coordinates(img)
     if click_data and click_data.get("x") is not None:
