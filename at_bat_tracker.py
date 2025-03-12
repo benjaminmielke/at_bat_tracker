@@ -69,6 +69,20 @@ def load_hits_for_player(hitter_name):
     hits = [dict(row) for row in results]
     return hits
 
+def load_metrics_for_player(hitter_name):
+    """Query the view vw_hitting_metrics to retrieve Hard Hit % and Weak Hit %."""
+    client = get_bigquery_client()
+    query = f"""
+      SELECT `Hard Hit %`, `Weak Hit %`
+      FROM `hit-tracker-453205.hit_tracker_data.vw_hitting_metrics`
+      WHERE hitter_name = '{hitter_name}'
+    """
+    results = client.query(query).result()
+    # Assume one row per hitter.
+    for row in results:
+        return row["Hard Hit %"], row["Weak Hit %"]
+    return None, None
+
 # =============================================================================
 # Load Options on Startup
 # =============================================================================
