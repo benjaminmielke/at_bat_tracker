@@ -11,17 +11,83 @@ def rerun_app():
     if hasattr(st, "experimental_rerun"):
         st.experimental_rerun()
 
-# --- Initialize additional session state for select options and add-mode flags ---
+# =============================================================================
+# BigQuery helper functions for options
+# =============================================================================
+def get_bigquery_client():
+    service_account_info = st.secrets["bigquery"]
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+    return bigquery.Client(credentials=credentials, project=credentials.project_id)
+
+def load_opponent_options():
+    client = get_bigquery_client()
+    query = "SELECT opponent FROM `hit-tracker-453205.hit_tracker_data.dim_opponents`"
+    results = client.query(query).result()
+    options = [row.opponent for row in results]
+    return options
+
+def load_hitter_options():
+    client = get_bigquery_client()
+    query = "SELECT hitter FROM `hit-tracker-453205.hit_tracker_data.dim_hitters`"
+    results = client.query(query).result()
+    options = [row.hitter for row in results]
+    return options
+
+def save_opponent_to_bigquery(new_opponent):
+    client = get_bigquery_client()
+    table_id = "hit-tracker-453205.hit_tracker_data.dim_opponents"
+    row = {"opponent": new_opponent}
+    errors = client.insert_rows_json(table_id, [row])
+    if errors:
+        st.error("Error saving opponent: " + str(errors))
+
+def save_hitter_to_bigquery(new_hitter):
+    client = get_bigquery_client()
+    table_id = "hit-tracker-453205.hit_tracker_data.dim_hitters"
+    row = {"hitter": new_hitter}
+    errors = client.insert_rows_json(table_id, [row])
+    if errors:
+        st.error("Error saving hitter: " + str(errors))
+
+# =============================================================================
+# Other BigQuery functions (for logging hits)
+# =============================================================================
+def log_to_bigquery(hit_info):
+    client = get_bigquery_client()
+    table_id = "hit-tracker-453205.hit_tracker_data.fact_hit_log"
+    errors = client.insert_rows_json(table_id, [hit_info])
+    if errors:
+        st.error(f"Error logging data: {errors}")
+    else:
+        st.success("Hit logged!")
+
+# =============================================================================
+# Load Options on Startup
+# =============================================================================
+# Try to load opponent options from BigQuery; if error or empty, set defaults.
 if "opponent_options" not in st.session_state:
-    st.session_state["opponent_options"] = ["Team A", "Team B"]
+    try:
+        opps = load_opponent_options()
+        st.session_state["opponent_options"] = opps if opps else ["Team A", "Team B"]
+    except Exception as e:
+        st.session_state["opponent_options"] = ["Team A", "Team B"]
+
 if "hitter_options" not in st.session_state:
-    st.session_state["hitter_options"] = ["Hitter 1", "Hitter 2"]
+    try:
+        hitters = load_hitter_options()
+        st.session_state["hitter_options"] = hitters if hitters else ["Hitter 1", "Hitter 2"]
+    except Exception as e:
+        st.session_state["hitter_options"] = ["Hitter 1", "Hitter 2"]
+
+# Also initialize flags for add-mode.
 if "adding_opponent" not in st.session_state:
     st.session_state["adding_opponent"] = False
 if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
 
-# Inject custom CSS for global styling, main buttons, and override for plus/save buttons.
+# =============================================================================
+# Global CSS (keeping your original main button CSS)
+# =============================================================================
 st.markdown(
     """
     <style>
@@ -39,19 +105,6 @@ st.markdown(
         border-radius: 5px;
         width: 100%;
         margin-bottom: 10px;
-    }
-    /* Override for plus and save buttons - use body for higher specificity */
-    body button[id*="add_opponent"],
-    body button[id*="add_hitter"],
-    body button[id*="save_opponent"],
-    body button[id*="save_hitter"] {
-        background-color: gray !important;
-        border: 2px solid green !important;
-        color: black !important;
-        padding: 5px 10px !important;
-        font-size: 1.2em !important;
-        width: auto !important;
-        margin-bottom: 0 !important;
     }
     /* Title styling */
     .page-title {
@@ -82,37 +135,23 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Display the logo image at the top
+# Display the logo image and title.
 st.image("fuel_logo.jpeg", use_container_width=True)
-
-# Display the title below the logo
 st.markdown("<h1 class='page-title'>Log At Bat</h1>", unsafe_allow_html=True)
 
 # =============================================================================
-# BIGQUERY FUNCTIONS
+# Initialize other session state variables for flow.
 # =============================================================================
-def get_bigquery_client():
-    service_account_info = st.secrets["bigquery"]
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    return bigquery.Client(credentials=credentials, project=credentials.project_id)
-
-def log_to_bigquery(hit_info):
-    client = get_bigquery_client()
-    table_id = "hit-tracker-453205.hit_tracker_data.fact_hit_log"
-    errors = client.insert_rows_json(table_id, [hit_info])
-    if errors:
-        st.error(f"Error logging data: {errors}")
-    else:
-        st.success("Hit logged!")
-
-# --- Initialize session state for general app flow ---
 for key in ["stage", "hit_data", "img_click_data", "date", "opponent",
             "hitter_name", "outcome", "batted_result", "contact_type"]:
     if key not in st.session_state:
         st.session_state[key] = [] if key=="hit_data" else (None if key!="stage" else "game_details")
 
-# --- Button callbacks ---
+# =============================================================================
+# Button Callbacks
+# =============================================================================
 def submit_game_details():
+    # The selectbox widgets store their values in st.session_state["selected_opponent"] and ["selected_hitter"]
     st.session_state["opponent"] = st.session_state.get("selected_opponent", "")
     st.session_state["hitter_name"] = st.session_state.get("selected_hitter", "")
     if st.session_state["opponent"] and st.session_state["hitter_name"]:
@@ -153,7 +192,9 @@ def log_another_at_bat():
     st.session_state["stage"] = "game_details"
     st.session_state["img_click_data"] = None
 
-# --- UI Starts here ---
+# =============================================================================
+# UI Flow
+# =============================================================================
 if st.session_state["stage"] == "game_details":
     with st.container():
         st.markdown("<div class='game-details-container'>", unsafe_allow_html=True)
@@ -167,6 +208,8 @@ if st.session_state["stage"] == "game_details":
             new_opponent = st.text_input("New Opponent", key="new_opponent")
             if st.button("Save Opponent", key="save_opponent"):
                 if new_opponent and new_opponent not in st.session_state["opponent_options"]:
+                    # Save to BigQuery table and update options
+                    save_opponent_to_bigquery(new_opponent)
                     st.session_state["opponent_options"].append(new_opponent)
                 st.session_state["adding_opponent"] = False
                 rerun_app()
@@ -179,6 +222,8 @@ if st.session_state["stage"] == "game_details":
             new_hitter = st.text_input("New Hitter", key="new_hitter")
             if st.button("Save Hitter", key="save_hitter"):
                 if new_hitter and new_hitter not in st.session_state["hitter_options"]:
+                    # Save to BigQuery table and update options
+                    save_hitter_to_bigquery(new_hitter)
                     st.session_state["hitter_options"].append(new_hitter)
                 st.session_state["adding_hitter"] = False
                 rerun_app()
