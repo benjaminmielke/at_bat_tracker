@@ -180,14 +180,15 @@ elif st.session_state.stage == "log_hit_location":
 
 elif st.session_state.stage == "plot_hit_location":
     st.header(f"Hit Location for {st.session_state.hitter_name}")
+    # Use the same plotting logic as the first code:
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
     ax.axis('off')
     ax.set_xlim(0, img.width)
-    ax.set_ylim(img.height, 0)
+    ax.set_ylim(img.height, 0)  # Match Streamlit image coordinate system
     for hit in st.session_state.hit_data:
-        if hit["x_coordinate"] and hit["y_coordinate"]:
+        if hit["x_coordinate"] is not None and hit["y_coordinate"] is not None:
             ax.scatter(hit["x_coordinate"], hit["y_coordinate"], color='red', s=100)
     st.pyplot(fig)
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
