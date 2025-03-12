@@ -13,7 +13,7 @@ def rerun_app():
         st.experimental_rerun()
 
 # =============================================================================
-# BigQuery helper functions for options and hits
+# BigQuery helper functions for options, metrics, and hits
 # =============================================================================
 def get_bigquery_client():
     service_account_info = st.secrets["bigquery"]
@@ -24,15 +24,13 @@ def load_opponent_options():
     client = get_bigquery_client()
     query = "SELECT opponent FROM `hit-tracker-453205.hit_tracker_data.dim_opponents`"
     results = client.query(query).result()
-    options = [row.opponent for row in results]
-    return options
+    return [row.opponent for row in results]
 
 def load_hitter_options():
     client = get_bigquery_client()
     query = "SELECT hitter FROM `hit-tracker-453205.hit_tracker_data.dim_hitters`"
     results = client.query(query).result()
-    options = [row.hitter for row in results]
-    return options
+    return [row.hitter for row in results]
 
 def save_opponent_to_bigquery(new_opponent):
     client = get_bigquery_client()
@@ -66,21 +64,19 @@ def load_hits_for_player(hitter_name):
         WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
-    hits = [dict(row) for row in results]
-    return hits
+    return [dict(row) for row in results]
 
 def load_metrics_for_player(hitter_name):
     """Query the view vw_hitting_metrics to retrieve Hard Hit % and Weak Hit %."""
     client = get_bigquery_client()
     query = f"""
-      SELECT `Hard Hit %`, `Weak Hit %`
+      SELECT `Hard Hit %` as hard_hit, `Weak Hit %` as weak_hit
       FROM `hit-tracker-453205.hit_tracker_data.vw_hitting_metrics`
       WHERE hitter_name = '{hitter_name}'
     """
     results = client.query(query).result()
-    # Assume one row per hitter.
     for row in results:
-        return row["Hard Hit %"], row["Weak Hit %"]
+        return row.hard_hit, row.weak_hit
     return None, None
 
 # =============================================================================
@@ -88,15 +84,13 @@ def load_metrics_for_player(hitter_name):
 # =============================================================================
 if "opponent_options" not in st.session_state:
     try:
-        opps = load_opponent_options()
-        st.session_state["opponent_options"] = opps if opps else ["Team A", "Team B"]
+        st.session_state["opponent_options"] = load_opponent_options() or ["Team A", "Team B"]
     except Exception as e:
         st.session_state["opponent_options"] = ["Team A", "Team B"]
 
 if "hitter_options" not in st.session_state:
     try:
-        hitters = load_hitter_options()
-        st.session_state["hitter_options"] = hitters if hitters else ["Hitter 1", "Hitter 2"]
+        st.session_state["hitter_options"] = load_hitter_options() or ["Hitter 1", "Hitter 2"]
     except Exception as e:
         st.session_state["hitter_options"] = ["Hitter 1", "Hitter 2"]
 
@@ -298,6 +292,8 @@ elif st.session_state["stage"] == "plot_hit_location":
     st.header(f"Hit Location for {st.session_state['hitter_name']}")
     # Load all hits for the current hitter from BigQuery.
     hits = load_hits_for_player(st.session_state["hitter_name"])
+    # Also load the metrics from the view.
+    hard_hit, weak_hit = load_metrics_for_player(st.session_state["hitter_name"])
     img = Image.open("baseball_field_image.png").convert("RGB")
     fig, ax = plt.subplots()
     ax.imshow(img)
@@ -306,6 +302,10 @@ elif st.session_state["stage"] == "plot_hit_location":
     ax.set_ylim(img.height, 0)
     # Add the title on the image: "<Hitter Name> Spray Chart"
     ax.set_title(f"{st.session_state['hitter_name']} Spray Chart", fontsize=20, color='black', pad=20)
+    # Add text below the title for the metrics.
+    if hard_hit is not None and weak_hit is not None:
+        ax.text(0.5, 0.88, f"Weak Hit %: {weak_hit}%   Hard Hit %: {hard_hit}%", transform=ax.transAxes,
+                fontsize=10, color='black', ha='center')
     # Define color mapping for contact type.
     contact_color = {
         "Weak Ground Ball": "#CD853F",  # light brown
