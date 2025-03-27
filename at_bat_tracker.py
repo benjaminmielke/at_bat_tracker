@@ -92,25 +92,14 @@ def load_all_metrics_for_player(hitter_name):
 def delete_hit_from_bigquery(hit_id):
     try:
         client = get_bigquery_client()
-        table_id = "hit-tracker-453205.hit_tracker_data.fact_hit_log"
-        
-        # Use the delete mutation API instead of a DELETE query
         query = f"""
-            DELETE FROM `{table_id}`
-            WHERE id = @hit_id
+            DELETE FROM hit-tracker-453205.hit_tracker_data.fact_hit_log
+            WHERE id = '{hit_id}'
         """
-        
-        job_config = bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ScalarQueryParameter("hit_id", "STRING", hit_id)
-            ]
-        )
-        
-        client.query(query, job_config=job_config).result()
+        results = client.query(query).result()
         st.success("At bat deleted successfully!")
     except Exception as e:
-        st.error(f"Error deleting at-bat: {str(e)}")
-        # Log the full error for debugging
+        st.error(f"Error deleting at-bat. Please try again.")
         print(f"Delete error: {str(e)}")
 
 
@@ -520,26 +509,19 @@ elif st.session_state["stage"] == "reset":
         # Generate unique keys based on both the hit id and index position
         hit_idx = hits.index(hit)
         
-        # Create a row with columns for the line item and delete button
-        col1, col2 = st.columns([9, 1])
-        
-        with col1:
-            # Create visually appealing line item with background
-            st.markdown(f"""
-            <div class="at-bat-item">
-                <div class="at-bat-info">
-                    <div class="at-bat-date">{hit_date}</div>
-                    <div class="at-bat-opponent">{hit_opponent}</div>
-                    <div class="at-bat-outcome">{hit_outcome}</div>
-                    <div class="at-bat-details">{hit_details}</div>
-                </div>
+        # Create visually appealing line item with background
+        st.markdown(f"""
+        <div class="at-bat-item">
+            <div class="at-bat-info">
+                <div class="at-bat-date">{hit_date}</div>
+                <div class="at-bat-opponent">{hit_opponent}</div>
+                <div class="at-bat-outcome">{hit_outcome}</div>
+                <div class="at-bat-details">{hit_details}</div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
         
-        with col2:
-            # Add the delete button with special styling
-            st.markdown('<div class="delete-button">', unsafe_allow_html=True)
-            if st.button("❌", key=f"delete_{hit['id']}_{hit_idx}", help="Delete this at-bat"):
-                delete_hit(hit["id"])
-            st.markdown('</div>', unsafe_allow_html=True)
+        # Place delete button only
+        if st.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
+            delete_hit(hit["id"])
             delete_hit(hit["id"])
