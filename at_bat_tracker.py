@@ -163,15 +163,34 @@ st.markdown(
     /* At bat list styling */
     .at-bat-item {
         background-color: #121212;
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 5px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid orange;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
     .at-bat-info {
-        flex-grow: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr 2fr;
+        gap: 10px;
+        align-items: center;
+        font-size: 14px;
+    }
+    .at-bat-date, .at-bat-opponent, .at-bat-outcome, .at-bat-details {
+        padding: 0 5px;
+    }
+    .at-bat-date {
+        font-weight: bold;
+        color: #FFD700;
+    }
+    .at-bat-opponent {
+        color: #E0E0E0;
+    }
+    .at-bat-outcome {
+        color: #90EE90;
+    }
+    .at-bat-details {
+        color: #ADD8E6;
     }
     .at-bat-actions {
         display: flex;
@@ -458,25 +477,36 @@ elif st.session_state["stage"] == "reset":
         hit_date = hit.get("date", "N/A")
         hit_opponent = hit.get("opponent", "N/A")
         hit_outcome = hit.get("outcome", "N/A")
-        hit_batted_result = hit.get("batted_result", "")
-        hit_contact_type = hit.get("contact_type", "")
         
-        hit_details = f"{hit_date} vs {hit_opponent}: {hit_outcome}"
-        if hit_batted_result:
-            hit_details += f" - {hit_batted_result}"
-        if hit_contact_type:
-            hit_details += f" ({hit_contact_type})"
+        # Format details separately
+        hit_details = ""
+        if hit.get("batted_result"):
+            hit_details += hit.get("batted_result")
+        if hit.get("contact_type"):
+            hit_details += f" ({hit.get('contact_type')})"
         
-        col1, col2, col3 = st.columns([4, 1, 1])
-        col1.markdown(f"<div class='at-bat-info'>{hit_details}</div>", unsafe_allow_html=True)
+        # Create visually appealing line item with background
+        st.markdown(f"""
+        <div class="at-bat-item">
+            <div class="at-bat-info">
+                <div class="at-bat-date">{hit_date}</div>
+                <div class="at-bat-opponent">{hit_opponent}</div>
+                <div class="at-bat-outcome">{hit_outcome}</div>
+                <div class="at-bat-details">{hit_details}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Generate unique keys based on both the hit id and index position
         hit_idx = hits.index(hit)
         
+        # Place buttons directly on the list item using absolute positioning
+        col1, col2 = st.columns([1, 1])
+        
         # Edit button
-        if col2.button("✏️", key=f"edit_{hit['id']}_{hit_idx}"):
+        if col1.button("✏️", key=f"edit_{hit['id']}_{hit_idx}"):
             edit_hit(hit)
             
         # Delete button
-        if col3.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
+        if col2.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
             delete_hit(hit["id"])
