@@ -517,13 +517,7 @@ elif st.session_state["stage"] == "reset":
         # Generate unique keys based on both the hit id and index position
         hit_idx = hits.index(hit)
         
-        # Place buttons directly on the list item using absolute positioning
-        col1, col2 = st.columns([1, 1])
-        
-        # Edit button
-        if col1.button("✏️", key=f"edit_{hit['id']}_{hit_idx}"):
-            edit_hit(hit)
-            
-        # Delete button
-        if col2.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
+        # Place delete button only
+        if st.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
+            delete_hit(hit["id"])
             delete_hit(hit["id"])
