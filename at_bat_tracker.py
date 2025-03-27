@@ -90,13 +90,28 @@ def load_all_metrics_for_player(hitter_name):
     return None, None, None, None, None
 
 def delete_hit_from_bigquery(hit_id):
-    client = get_bigquery_client()
-    query = f"""
-        DELETE FROM hit-tracker-453205.hit_tracker_data.fact_hit_log
-        WHERE id = '{hit_id}'
-    """
-    results = client.query(query).result()
-    st.success("At bat deleted successfully!")
+    try:
+        client = get_bigquery_client()
+        table_id = "hit-tracker-453205.hit_tracker_data.fact_hit_log"
+        
+        # Use the delete mutation API instead of a DELETE query
+        query = f"""
+            DELETE FROM `{table_id}`
+            WHERE id = @hit_id
+        """
+        
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("hit_id", "STRING", hit_id)
+            ]
+        )
+        
+        client.query(query, job_config=job_config).result()
+        st.success("At bat deleted successfully!")
+    except Exception as e:
+        st.error(f"Error deleting at-bat: {str(e)}")
+        # Log the full error for debugging
+        print(f"Delete error: {str(e)}")
 
 
 # =============================================================================
