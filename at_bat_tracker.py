@@ -83,6 +83,15 @@ def load_all_metrics_for_player(hitter_name):
         return row.hard_hit, row.weak_hit, row.fly, row.line, row.ground
     return None, None, None, None, None
 
+def delete_hit_from_bigquery(hit_id):
+    client = get_bigquery_client()
+    query = f"""
+        DELETE FROM hit-tracker-453205.hit_tracker_data.fact_hit_log
+        WHERE id = '{hit_id}'
+    """
+    results = client.query(query).result()
+    st.success("At bat deleted successfully!")
+
 
 # =============================================================================
 # Load Options on Startup
@@ -103,6 +112,8 @@ if "adding_opponent" not in st.session_state:
     st.session_state["adding_opponent"] = False
 if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
+if "editing_hit" not in st.session_state:
+    st.session_state["editing_hit"] = None
 
 # =============================================================================
 # Global CSS
@@ -148,6 +159,39 @@ st.markdown(
         padding: 8px;
         border-radius: 5px;
         width: 100%;
+    }
+    /* At bat list styling */
+    .at-bat-item {
+        background-color: #121212;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .at-bat-info {
+        flex-grow: 1;
+    }
+    .at-bat-actions {
+        display: flex;
+        gap: 5px;
+    }
+    .edit-button {
+        background-color: blue;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .delete-button {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
     }
     </style>
     """,
@@ -209,6 +253,36 @@ def select_contact_type(contact):
 def log_another_at_bat():
     st.session_state["stage"] = "game_details"
     st.session_state["img_click_data"] = None
+
+def delete_hit(hit_id):
+    delete_hit_from_bigquery(hit_id)
+    # Remove from local data if present
+    st.session_state["hit_data"] = [hit for hit in st.session_state["hit_data"] if hit["id"] != hit_id]
+    st.experimental_rerun()
+
+def edit_hit(hit):
+    st.session_state["editing_hit"] = hit
+    st.session_state["date"] = hit["date"]
+    st.session_state["opponent"] = hit["opponent"]
+    st.session_state["hitter_name"] = hit["hitter_name"]
+    st.session_state["outcome"] = hit["outcome"]
+    st.session_state["batted_result"] = hit["batted_result"]
+    st.session_state["contact_type"] = hit["contact_type"]
+    
+    # Delete the current hit
+    delete_hit_from_bigquery(hit["id"])
+    
+    # Set the flow to the appropriate stage based on the hit data
+    if hit["outcome"] == "Batted Ball" and hit["batted_result"] is not None and hit["contact_type"] is not None:
+        st.session_state["stage"] = "log_hit_location"
+    elif hit["outcome"] == "Batted Ball" and hit["batted_result"] is not None:
+        st.session_state["stage"] = "select_contact_type"
+    elif hit["outcome"] == "Batted Ball":
+        st.session_state["stage"] = "select_batted_result"
+    else:
+        st.session_state["stage"] = "select_outcome"
+    
+    st.experimental_rerun()
 
 # =============================================================================
 # UI Flow
@@ -375,3 +449,31 @@ elif st.session_state["stage"] == "reset":
         st.write(f"Batted Result: {st.session_state['batted_result']}")
         st.write(f"Contact Type: {st.session_state['contact_type']}")
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
+    
+    # List of at bats for this player
+    st.header(f"At-Bat History for {st.session_state['hitter_name']}")
+    hits = load_hits_for_player(st.session_state["hitter_name"])
+    
+    for hit in hits:
+        hit_date = hit.get("date", "N/A")
+        hit_opponent = hit.get("opponent", "N/A")
+        hit_outcome = hit.get("outcome", "N/A")
+        hit_batted_result = hit.get("batted_result", "")
+        hit_contact_type = hit.get("contact_type", "")
+        
+        hit_details = f"{hit_date} vs {hit_opponent}: {hit_outcome}"
+        if hit_batted_result:
+            hit_details += f" - {hit_batted_result}"
+        if hit_contact_type:
+            hit_details += f" ({hit_contact_type})"
+        
+        col1, col2, col3 = st.columns([4, 1, 1])
+        col1.markdown(f"<div class='at-bat-info'>{hit_details}</div>", unsafe_allow_html=True)
+        
+        # Edit button
+        if col2.button("✏️", key=f"edit_{hit['id']}"):
+            edit_hit(hit)
+            
+        # Delete button
+        if col3.button("❌", key=f"delete_{hit['id']}"):
+            delete_hit(hit["id"])
