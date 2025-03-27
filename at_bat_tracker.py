@@ -9,8 +9,14 @@ import uuid
 
 # Helper to rerun the app if possible.
 def rerun_app():
-    if hasattr(st, "experimental_rerun"):
-        st.experimental_rerun()
+    try:
+        if hasattr(st, "experimental_rerun"):
+            st.experimental_rerun()
+        else:
+            st.rerun()  # Try newer API if available
+    except Exception as e:
+        st.warning("Please refresh the page to see changes.")
+        st.write("Changes have been saved to the database.")
 
 # =============================================================================
 # BigQuery helper functions for options, metrics, and hits
@@ -114,6 +120,8 @@ if "adding_hitter" not in st.session_state:
     st.session_state["adding_hitter"] = False
 if "editing_hit" not in st.session_state:
     st.session_state["editing_hit"] = None
+if "deletion_success" not in st.session_state:
+    st.session_state["deletion_success"] = False
 
 # =============================================================================
 # Global CSS
@@ -277,7 +285,10 @@ def delete_hit(hit_id):
     delete_hit_from_bigquery(hit_id)
     # Remove from local data if present
     st.session_state["hit_data"] = [hit for hit in st.session_state["hit_data"] if hit["id"] != hit_id]
-    st.experimental_rerun()
+    # Set a flag to indicate successful deletion
+    st.session_state["deletion_success"] = True
+    # Try to rerun safely
+    rerun_app()
 
 def edit_hit(hit):
     st.session_state["editing_hit"] = hit
@@ -468,6 +479,12 @@ elif st.session_state["stage"] == "reset":
         st.write(f"Batted Result: {st.session_state['batted_result']}")
         st.write(f"Contact Type: {st.session_state['contact_type']}")
     st.button("Log Another At-Bat", on_click=log_another_at_bat)
+    
+    # Show success message if deletion occurred
+    if st.session_state["deletion_success"]:
+        st.success("At-bat successfully deleted!")
+        # Reset the flag
+        st.session_state["deletion_success"] = False
     
     # List of at bats for this player
     st.header(f"At-Bat History for {st.session_state['hitter_name']}")
