@@ -470,10 +470,13 @@ elif st.session_state["stage"] == "reset":
         col1, col2, col3 = st.columns([4, 1, 1])
         col1.markdown(f"<div class='at-bat-info'>{hit_details}</div>", unsafe_allow_html=True)
         
+        # Generate unique keys based on both the hit id and index position
+        hit_idx = hits.index(hit)
+        
         # Edit button
-        if col2.button("✏️", key=f"edit_{hit['id']}"):
+        if col2.button("✏️", key=f"edit_{hit['id']}_{hit_idx}"):
             edit_hit(hit)
             
         # Delete button
-        if col3.button("❌", key=f"delete_{hit['id']}"):
+        if col3.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
             delete_hit(hit["id"])
