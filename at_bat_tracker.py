@@ -176,10 +176,11 @@ st.markdown(
         margin-bottom: 10px;
         border-left: 4px solid orange;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        position: relative;
     }
     .at-bat-info {
         display: grid;
-        grid-template-columns: 1fr 1fr 2fr 2fr;
+        grid-template-columns: 1fr 1fr 2fr 2fr 30px;
         gap: 10px;
         align-items: center;
         font-size: 14px;
@@ -200,25 +201,24 @@ st.markdown(
     .at-bat-details {
         color: #ADD8E6;
     }
-    .at-bat-actions {
-        display: flex;
-        gap: 5px;
-    }
-    .edit-button {
-        background-color: blue;
-        color: white;
+    .delete-btn {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: transparent;
         border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
+        color: red;
+        font-size: 12px;
         cursor: pointer;
+        padding: 0;
+        height: 20px;
+        width: 20px;
+        line-height: 1;
+        border-radius: 50%;
     }
-    .delete-button {
-        background-color: red;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
+    .delete-btn:hover {
+        background-color: rgba(255, 0, 0, 0.1);
     }
     </style>
     """,
@@ -502,22 +502,29 @@ elif st.session_state["stage"] == "reset":
         if hit.get("contact_type"):
             hit_details += f" ({hit.get('contact_type')})"
         
-        # Create visually appealing line item with background
-        st.markdown(f"""
-        <div class="at-bat-item">
-            <div class="at-bat-info">
-                <div class="at-bat-date">{hit_date}</div>
-                <div class="at-bat-opponent">{hit_opponent}</div>
-                <div class="at-bat-outcome">{hit_outcome}</div>
-                <div class="at-bat-details">{hit_details}</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
         # Generate unique keys based on both the hit id and index position
         hit_idx = hits.index(hit)
         
-        # Place delete button only
-        if st.button("❌", key=f"delete_{hit['id']}_{hit_idx}"):
-            delete_hit(hit["id"])
+        # Create a row with columns for the line item and delete button
+        col1, col2 = st.columns([9, 1])
+        
+        with col1:
+            # Create visually appealing line item with background
+            st.markdown(f"""
+            <div class="at-bat-item">
+                <div class="at-bat-info">
+                    <div class="at-bat-date">{hit_date}</div>
+                    <div class="at-bat-opponent">{hit_opponent}</div>
+                    <div class="at-bat-outcome">{hit_outcome}</div>
+                    <div class="at-bat-details">{hit_details}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            # Add the delete button with special styling
+            st.markdown('<div class="delete-button">', unsafe_allow_html=True)
+            if st.button("❌", key=f"delete_{hit['id']}_{hit_idx}", help="Delete this at-bat"):
+                delete_hit(hit["id"])
+            st.markdown('</div>', unsafe_allow_html=True)
             delete_hit(hit["id"])
